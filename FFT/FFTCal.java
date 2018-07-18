@@ -2,6 +2,9 @@ import static java.lang.Math.*;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.List;
@@ -19,49 +22,40 @@ public class FFTCal {
     //  // Test the FFT to make sure it's working
     public static void main(String[] args) {
     // int N = (int)Math.pow(2, 8);
-    int N = 50*60*2;
-    int N_fft = (int)Math.pow(2,nextPowerOf2(N));
-    double fs = 50; 
+        int N = 50*60*2;
+        int N_fft = (int)Math.pow(2,nextPowerOf2(N));
+        double fs = 50; 
 
-    double[] bpm = new double[N];
-    double[] index = new double[12];
-    
-    double[] re = new double[N_fft];
-    double[] im = new double[N_fft];
+        double[] bpm = new double[N];
+        double[] index = new double[12];
+        
+        double[] re = new double[N_fft];
+        double[] im = new double[N_fft];
 
-    double[] power = new double[N_fft/2+1];
-    double[] frequency = new double[N_fft/2+1];
+        double[] power = new double[N_fft/2+1];
+        double[] frequency = new double[N_fft/2+1];
 
-    try{
-        Scanner scanner = new Scanner(new File("test1_hrv_data.csv"));
-        for(int i=0; i<N; i++)
-        {
-        bpm[i] = Double.parseDouble(scanner.next());
-        re[i] = 60/bpm[i];
-        im[i] = 0;
-        }
-        scanner.close();
-    } catch (FileNotFoundException e){
-        System.out.print("File not found");
+        try{
+            Scanner scanner = new Scanner(new File("test1_hrv_data.csv"));
+            for(int i=0; i<N; i++)
+            {
+            bpm[i] = Double.parseDouble(scanner.next());
+            re[i] = 60/bpm[i];
+            im[i] = 0;
+            }
+            scanner.close();
+        } catch (FileNotFoundException e){
+            System.out.print("File not found");
+        }   
+
+        fillspectrum(bpm, fs, power, frequency);
+        
+        FFTCal fftcal = new FFTCal(bpm,index);
+        
+        fftcal.indexcal(index);
+        System.out.println("index:");
+        for(int i = 0; i<12; i++) System.out.println(index[i]);
     }
-
-    fillspectrum(bpm, fs, power, frequency);
-    
-    for(int i = 0; i<8; i++) {
-        System.out.print('[');
-        System.out.print(power[i]);
-        System.out.print(',');
-        System.out.print(frequency[i]);
-        System.out.print(']');
-        System.out.print('\n');
-    }
-}
-
-    // FFTCal fftcal = new FFTCal(bpm,index);
-    
-    // fftcal.indexcal(index);
-    // for(int i = 0; i<12; i++) System.out.println(index[i]);
-    // }
 
     private static void FFT(int n, double[] x, double[] y) {
 
@@ -155,7 +149,7 @@ public class FFTCal {
 
         for(int i = 0; i < N_fft/2+1; i++){
             power[i] = 2*(Math.pow(re[i]/bpm.length, 2)+Math.pow(im[i]/bpm.length, 2));
-            frequency[i] = 0.5*fs*i/N_fft;
+            frequency[i] = 0.5*fs*i/N_fft*2;
         }
     }
 
@@ -193,12 +187,7 @@ public class FFTCal {
         double ratio_LFHF = 0;
 
         double CR = 0;
-        double peakpower = 0;
         double mLFpeak = 0;
-        double mTpL = 0;
-        double mTpH = 0;
-        double mTp = 0;
-
 
         /* calculate the time domain index */
         for(int i = 0; i<bpm.length;i++){
@@ -215,77 +204,60 @@ public class FFTCal {
         double[] frequency = new double[N_fft/2+1];
         double fs = 50;
 
+        /* trasfer the time domian data to the frequency domian */
         fillspectrum(bpm,fs,power,frequency);
 
-        for(int i = 0; i<8; i++) {
-            System.out.print('[');
-            System.out.print(power[i]);
-            System.out.print(',');
-            System.out.print(frequency[i]);
-            System.out.print(']');
-            System.out.print('\n');
+        /* find the position of the frequency index*/
+        double[] FrequencyIdx = {0.003,0.0033,0.015,0.04,0.15,cr_cutoff,0.4};
+        int[] IdxNum = new int[FrequencyIdx.length];  
+        for(int i = 0; i<FrequencyIdx.length; i++) IdxNum[i]=(int)(FrequencyIdx[i]*N_fft/fs);
+
+        /* Calculate ULF,VLF,LF and HF*/
+        ULF = Arrays.stream(Arrays.copyOfRange(power, 0, IdxNum[0]+1)).sum();
+        VLF = Arrays.stream(Arrays.copyOfRange(power, IdxNum[0]+1, IdxNum[3]+1)).sum();
+        
+        int LFPeakNum = IdxNum[3]+1;
+        for (int i = IdxNum[3]+1; i <= IdxNum[4]; i++) {
+            LFPeakNum = power[i] > power[LFPeakNum] ? i : LFPeakNum;
+            LF = LF + power[i];
         }
+        LF_peak = frequency[LFPeakNum];
 
-        for(int i = 0; i<N_fft/2+1; i++){
-            if(frequency[i] <= 0.003){
-                ULF = ULF + power[i];
-                mTpL = mTpL + power[i];
-                mTpH = mTpH + power[i];
-            } else if ((frequency[i] <= 0.0033) && (frequency[i] > 0.003)) {
-                VLF = VLF + power[i];
-                mTpL = mTpL + power[i];
-                mTpH = mTpH + power[i];
-            } else if ((frequency[i] <= 0.015) && (frequency[i] > 0.0033)) {
-                VLF = VLF + power[i];
-                mTpH = mTpH + power[i];
-            } else if ((frequency[i] <= 0.04) && (frequency[i] > 0.015)) {
-                VLF = VLF + power[i];
-                peakpower = peakpower + power[i];
-                mTpH = mTpH + power[i];
-            } else if ((frequency[i] <= 0.15) && (frequency[i] > 0.04)) {
-                LF = LF + power[i];
-                if ( LF_peak < power[i] ){LF_peak = power[i];}
-                if ( mLFpeak < power[i] ){
-                    mLFpeak = power[i];
-                    peakpower = peakpower + power[i];
-                }
-                mTpH = mTpH + power[i];
-            } else if ((frequency[i] <= cr_cutoff) && (frequency[i] > 0.15)) {
-                HF = HF + power[i];
-                if ( HF_peak < frequency[i] ){HF_peak = power[i];}
-                if ( mLFpeak < power[i] ){
-                    mLFpeak = power[i];
-                }
-                mTpH = mTpH + power[i];
-            } else if ((frequency[i] < 0.4) && (frequency[i] > cr_cutoff)) {
-                HF = HF + power[i];
-                if (HF_peak < frequency[i]){HF_peak = power[i];}
-                mTpH = mTpH + power[i];
-            } else if (frequency[i] == 0.4){
-                HF = HF + power[i];
-                if (HF_peak < frequency[i]){HF_peak = power[i];}
-            }
-
-            pLF = LF/(VLF+HF)*100;
-            pHF = HF/(VLF+LF)*100;
-            ratio_LFHF = LF/HF*100;
-
-            mTp = mTpH - mTpL;
-            CR = peakpower/Math.pow(mTp-peakpower, 2);
-
-            PI[0] = max_min_HR;
-            PI[1] = aHR;
-            PI[2] = ULF;
-            PI[3] = VLF;
-            PI[4] = LF;
-            PI[5] = LF_peak;
-            PI[6] = HF;
-            PI[7] = HF_peak;
-            PI[8] = pLF;
-            PI[9] = pHF;
-            PI[10] = ratio_LFHF;
-            PI[11] = CR;
+        int HFPeakNum = IdxNum[4]+1;
+        for (int i = IdxNum[4]+1; i <= IdxNum[6]; i++) {
+            HFPeakNum = power[i] > power[HFPeakNum] ? i : HFPeakNum;
+            HF = HF + power[i];
         }
+        HF_peak = frequency[HFPeakNum];
+
+        pLF = LF/(VLF+HF)*100;
+        pHF = HF/(VLF+LF)*100;
+        ratio_LFHF = LF/HF*100;
+
+        /* Calculate Coherence related*/
+        int fPeakNum = IdxNum[3]+1;
+        for (int i = IdxNum[3]+1; i <= IdxNum[5]; i++) {
+            fPeakNum = power[i] > power[fPeakNum] ? i : fPeakNum;
+        }
+        double peakpower = Arrays.stream(Arrays.copyOfRange(power, IdxNum[2]+1, fPeakNum)).sum();
+        double mTpL = Arrays.stream(Arrays.copyOfRange(power, 0, IdxNum[1]+1)).sum();
+        double mTpH = Arrays.stream(Arrays.copyOfRange(power, 0, IdxNum[6]+1)).sum();
+        double mTp = mTpH - mTpL;
+        CR = peakpower/Math.pow(mTp-peakpower, 2);
+                    
+        PI[0] = max_min_HR;
+        PI[1] = aHR;
+        PI[2] = ULF;
+        PI[3] = VLF;
+        PI[4] = LF_peak;
+        PI[5] = LF;
+        PI[6] = HF_peak;
+        PI[7] = HF;
+        PI[8] = pLF;
+        PI[9] = pHF;
+        PI[10] = ratio_LFHF;
+        PI[11] = CR;
+        
     }
     
 }
