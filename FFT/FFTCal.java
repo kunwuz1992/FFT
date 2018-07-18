@@ -187,7 +187,6 @@ public class FFTCal {
         double ratio_LFHF = 0;
 
         double CR = 0;
-        double mLFpeak = 0;
 
         /* calculate the time domain index */
         for(int i = 0; i<bpm.length;i++){
