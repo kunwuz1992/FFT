@@ -1,2 +1,1 @@
-# FFT
-FFT for Java
+# FFT_java
