@@ -165,6 +165,13 @@ public class FFTCal {
         }
         return i;
     }
+    
+    private static double SumArray(double[] InputArray)
+    {
+        double sum = 0;
+        for(double x:InputArray) sum = sum + x;
+        return sum;
+    }
 
     public void indexcal(double[] PI){
 
@@ -212,8 +219,8 @@ public class FFTCal {
         for(int i = 0; i<FrequencyIdx.length; i++) IdxNum[i]=(int)(FrequencyIdx[i]*N_fft/fs);
 
         /* Calculate ULF,VLF,LF and HF*/
-        ULF = Arrays.stream(Arrays.copyOfRange(power, 0, IdxNum[0]+1)).sum();
-        VLF = Arrays.stream(Arrays.copyOfRange(power, IdxNum[0]+1, IdxNum[3]+1)).sum();
+        ULF = SumArray(Arrays.copyOfRange(power, 0, IdxNum[0]+1));
+        VLF = SumArray(Arrays.copyOfRange(power, IdxNum[0]+1, IdxNum[3]+1));
         
         int LFPeakNum = IdxNum[3]+1;
         for (int i = IdxNum[3]+1; i <= IdxNum[4]; i++) {
@@ -238,9 +245,9 @@ public class FFTCal {
         for (int i = IdxNum[3]+1; i <= IdxNum[5]; i++) {
             fPeakNum = power[i] > power[fPeakNum] ? i : fPeakNum;
         }
-        double peakpower = Arrays.stream(Arrays.copyOfRange(power, IdxNum[2]+1, fPeakNum)).sum();
-        double mTpL = Arrays.stream(Arrays.copyOfRange(power, 0, IdxNum[1]+1)).sum();
-        double mTpH = Arrays.stream(Arrays.copyOfRange(power, 0, IdxNum[6]+1)).sum();
+        double peakpower = SumArray(Arrays.copyOfRange(power, IdxNum[2]+1, fPeakNum));    
+        double mTpL = SumArray(Arrays.copyOfRange(power, 0, IdxNum[1]+1));
+        double mTpH = SumArray(Arrays.copyOfRange(power, 0, IdxNum[6]+1));
         double mTp = mTpH - mTpL;
         CR = peakpower/Math.pow(mTp-peakpower, 2);
                     
