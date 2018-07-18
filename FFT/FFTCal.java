@@ -155,7 +155,7 @@ public class FFTCal {
 
         for(int i = 0; i < N_fft/2+1; i++){
             power[i] = 2*(Math.pow(re[i]/bpm.length, 2)+Math.pow(im[i]/bpm.length, 2));
-            frequency[i] = fs/2*(double)i/ (double)(N_fft/2+1);
+            frequency[i] = 0.5*fs*i/N_fft;
         }
     }
 
