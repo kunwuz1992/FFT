@@ -13,19 +13,31 @@ public class FFTCal {
     private double[] index;
     private double[] bpm;
     private double fs;
-    private int BpmDataNum;
-    
-    /* 
-        The input is the bpm signals with the length of 50*60*2;
-        The output is the performance index. 
-        index = [max_min_HR aHR ULF VLF LF_peak LF HF_peak HF pLF pHF ratio_LFHF CR];  
-    
-    */
-    public FFTCal(double[] bpm, double[] index, double fs, int BpmDataNum){
+
+    /**
+     * Ouput
+            - Order
+            [max_min_HR aHR ULF VLF LF_peak LF HF_peak HF pLF pHF ratio_LFHF CR]
+            - Time domain
+                -max_min_HR: average difference between the highest HR and the lowest HR in each respiratory circle during at least 2-min time duration
+                -aHR: average heart rate
+            - Frequency domain
+                -ULF: absolute power of the ultra-low-frequency band (<=0.003 Hz)
+                -VLF: absolute power of the very-low-frequency band (0.003~0.04 Hz)
+                -LF:  absolute power of the low-frequency band (0.04~0.15 Hz)
+                -LF_peak: peak frequency of the low-frequency band (0.04~0.15 Hz)
+                -HF: absolute power of the high-frequency band
+                -HF_peak: peak frequency of the high-frequency band (0.15~0.4 Hz)
+                -pLF: relative power of LF power, suggested to calculate by (LF power) / (VFL power + HF power)
+                -pHF: relative power of HF power, suggested to calculate by (HF power) / (VFL power + LF power)
+                -ratio_LFHF: ratio of LF power to HF power
+                -CR: the power in (0.015 ~ peak frequency Hz) to the power in (0.003 ~ 0.4 Hz)
+        - ver001 created on Jul. 12, 2018
+     */
+    public FFTCal(double[] bpm, double[] index, double fs){
         this.bpm = bpm;
         this.index = index;
         this.fs = fs;
-        this.BpmDataNum = BpmDataNum;
     }
 
     public static void main(String[] args) {
@@ -57,7 +69,7 @@ public class FFTCal {
 
         fillspectrum(bpm, fs, power, frequency);
         
-        FFTCal fftcal = new FFTCal(bpm,index,fs,N);
+        FFTCal fftcal = new FFTCal(bpm,index,fs);
         
         fftcal.indexcal(index);
         System.out.println("index:");
@@ -203,16 +215,16 @@ public class FFTCal {
         double CR = 0;
 
         /* calculate the time domain index */
-        for(int i = 0; i<BpmDataNum;i++){
+        for(int i = 0; i<bpm.length;i++){
             if(bpm[i]>max_hr) max_hr=bpm[i];
             if(bpm[i]<min_hr) min_hr=bpm[i];
             sum = sum + bpm[i];
         }
         max_min_HR = max_hr-min_hr;
-        aHR = (double)sum/(double)BpmDataNum;
+        aHR = (double)sum/(double)bpm.length;
 
         /* calculate the frequency domain index */
-        int N_fft = (int)Math.pow(2,nextPowerOf2(BpmDataNum));
+        int N_fft = (int)Math.pow(2,nextPowerOf2(bpm.length));
         double[] power = new double[N_fft/2+1];
         double[] frequency = new double[N_fft/2+1];
         // double fs = 50;
