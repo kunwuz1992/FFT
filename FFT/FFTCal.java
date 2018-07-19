@@ -10,18 +10,25 @@ import java.util.Scanner;
 import java.util.List;
 
 public class FFTCal {
-    
     private double[] index;
     private double[] bpm;
-
-    public FFTCal(double[] bpm, double[] index){
+    private double fs;
+    private int BpmDataNum;
+    
+    /* 
+        The input is the bpm signals with the length of 50*60*2;
+        The output is the performance index. 
+        index = [max_min_HR aHR ULF VLF LF_peak LF HF_peak HF pLF pHF ratio_LFHF CR];  
+    
+    */
+    public FFTCal(double[] bpm, double[] index, double fs, int BpmDataNum){
         this.bpm = bpm;
         this.index = index;
+        this.fs = fs;
+        this.BpmDataNum = BpmDataNum;
     }
 
-    //  // Test the FFT to make sure it's working
     public static void main(String[] args) {
-    // int N = (int)Math.pow(2, 8);
         int N = 50*60*2;
         int N_fft = (int)Math.pow(2,nextPowerOf2(N));
         double fs = 50; 
@@ -50,7 +57,7 @@ public class FFTCal {
 
         fillspectrum(bpm, fs, power, frequency);
         
-        FFTCal fftcal = new FFTCal(bpm,index);
+        FFTCal fftcal = new FFTCal(bpm,index,fs,N);
         
         fftcal.indexcal(index);
         System.out.println("index:");
@@ -196,19 +203,19 @@ public class FFTCal {
         double CR = 0;
 
         /* calculate the time domain index */
-        for(int i = 0; i<bpm.length;i++){
+        for(int i = 0; i<BpmDataNum;i++){
             if(bpm[i]>max_hr) max_hr=bpm[i];
             if(bpm[i]<min_hr) min_hr=bpm[i];
             sum = sum + bpm[i];
         }
         max_min_HR = max_hr-min_hr;
-        aHR = (double)sum/(double)bpm.length;
+        aHR = (double)sum/(double)BpmDataNum;
 
         /* calculate the frequency domain index */
-        int N_fft = (int)Math.pow(2,nextPowerOf2(bpm.length));
+        int N_fft = (int)Math.pow(2,nextPowerOf2(BpmDataNum));
         double[] power = new double[N_fft/2+1];
         double[] frequency = new double[N_fft/2+1];
-        double fs = 50;
+        // double fs = 50;
 
         /* trasfer the time domian data to the frequency domian */
         fillspectrum(bpm,fs,power,frequency);
@@ -262,8 +269,7 @@ public class FFTCal {
         PI[8] = pLF;
         PI[9] = pHF;
         PI[10] = ratio_LFHF;
-        PI[11] = CR;
-        
+        PI[11] = CR;      
     }
     
 }
