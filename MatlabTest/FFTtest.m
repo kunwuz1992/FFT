@@ -2,10 +2,26 @@ clc
 clear
 close all
 % test_data = csvread('test_data.csv'); test1_hrv_data.csv
-fs = 50;
+dfs = 1;
+rfs = 3;
+
+isresample = 1;
+N = dfs*60*2;
+
 test_data = csvread('test1_hrv_data.csv');
-java_data = csvread('test.csv');
-sampled_data = test_data(1:50*60*2);
+% java_data = csvread('test.csv');
+
+if (isresample == 1)
+    sampled_data = test_data(1:N);
+else 
+    xais = (1:1/dfs:N);
+    sampled_data = interp1(xais,test_data(1:N),(1:1/rfs:N),'linear');
+end
+
+
+%%
+
+fs = rfs;
 rri = 60./sampled_data;
 rr_resamp = rri;
 Len_resamp = length(rr_resamp);
@@ -65,7 +81,7 @@ CR = peakPower / (mTP - peakPower)^2;
 
 
 % 5.4 Return
-index_fd = [max_min_HR aHR ULF VLF LF_peak LF HF_peak HF pLF pHF ratio_LFHF CR];
+index_fd = [max_min_HR aHR ULF VLF LF_peak LF HF_peak HF pLF pHF ratio_LFHF CR]
 
 % figure
 % plot(ff,YY,'r'); hold on

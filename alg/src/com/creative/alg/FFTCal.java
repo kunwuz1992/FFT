@@ -28,13 +28,17 @@ public class FFTCal {
 
     private ArrayList<Double>  index;
     private ArrayList<Double> bpm;
-    private int fs;
+    private int Devicefs;
+    private int Resamplefs;
+    private boolean isresample;
 
 
-    public FFTCal(ArrayList<Double> bpm, ArrayList index, int fs){
+    public FFTCal(ArrayList<Double> bpm, ArrayList index, int dfs, int rfs, boolean isresample){
         this.bpm = bpm;
         this.index = index;
-        this.fs = fs;
+        this.Devicefs = dfs;
+        this.Resamplefs = rfs;
+        this.isresample = isresample;
     }
 
     private static void FFT(int n, List<Double> x, List<Double> y) {
@@ -171,7 +175,7 @@ public class FFTCal {
         double ratio_LFHF = 0;
 
         double CR = 0;
-
+        if(isresample) interpolation(bpm,Resamplefs, Devicefs);
         /* calculate the time domain index */
         for(double x:bpm) {
             if(x > max_hr) max_hr = x;
@@ -188,12 +192,12 @@ public class FFTCal {
         ArrayList<Double> frequency = new ArrayList<>(N_fft/2+1);
 
         /* trasfer the time domian data to the frequency domian */
-        fillspectrum(bpm,fs,power,frequency);
+        fillspectrum(bpm,Resamplefs,power,frequency);
 
         /* find the position of the frequency index*/
         double[] FrequencyIdx = {0.003,0.0033,0.015,0.04,0.15,cr_cutoff,0.4};
         int[] IdxNum = new int[FrequencyIdx.length];
-        for(int i = 0; i<FrequencyIdx.length; i++) IdxNum[i]=(int)(FrequencyIdx[i]*N_fft/fs);
+        for(int i = 0; i<FrequencyIdx.length; i++) IdxNum[i]=(int)(FrequencyIdx[i]*N_fft/Resamplefs);
 
         /* Calculate ULF,VLF,LF and HF*/
         ULF = SumArray(power.subList(0, IdxNum[0]+1));
@@ -228,9 +232,57 @@ public class FFTCal {
         double mTp = mTpH - mTpL;
         CR = peakpower/Math.pow(mTp-peakpower, 2);
 
-        Double[] tmp = {max_min_HR, aHR, ULF, VLF, LF_peak, LF, HF_peak, HF, pLF, pHF, ratio_LFHF, CR};
-        index.addAll(Arrays.asList(tmp));
+//        pLF = Math.round(pLF);
+//        pHF = Math.round(pHF);
+//        CR = Math.round(CR);
+//
+//        ratio_LFHF = Math.round(ratio_LFHF*100)/100;
+        double pLF1 = 100*LF/(LF+HF);
+        double pLF2 = 100*LF/(LF+VLF+HF);
 
+        Double[] tmp = {max_min_HR, aHR, ULF, VLF, LF_peak, LF, HF_peak, HF, pLF, pHF, ratio_LFHF, CR};
+        if(index.size()>=12) index.clear();
+        index.addAll(Arrays.asList(tmp));
+    }
+
+    private static void interpolation(ArrayList<Double> bpmlist, int resamplefs, int devicefs){
+        /* resample the bpm signal with the frequency refs*/
+        int newfs = lcm(resamplefs, devicefs);
+        int mul = newfs/devicefs;
+
+        double dif = 0;
+
+        ArrayList<Double> newbpm = new ArrayList<Double>();
+
+        for (int i = 0; i <bpmlist.size()-1; i ++){
+            dif = bpmlist.get(i+1) - bpmlist.get(i);
+            for (int j =0; j < mul; j++) newbpm.add(bpmlist.get(i)+dif*j/mul);
+        }
+        newbpm.add(bpmlist.get(bpmlist.size()-1));
+
+        int newlen = bpmlist.size();
+
+        bpmlist.clear();
+        for (int i = 0; i < newlen; i ++) {
+            bpmlist.add(newbpm.get(i * resamplefs));
+        }
+    }
+
+    private static int gcf(int a, int b)
+    {
+        while (a != b) // while the two numbers are not equal...
+        {
+            // ...subtract the smaller one from the larger one
+            if (a > b) a -= b; // if a is larger than b, subtract b from a
+            else b -= a; // if b is larger than a, subtract a from b
+        }
+        return a; // or return b, a will be equal to b either way
+    }
+
+    private static int lcm(int a, int b)
+    {
+        // the lcm is simply (a * b) divided by the gcf of the two
+        return (a * b) / gcf(a, b);
     }
 
 }

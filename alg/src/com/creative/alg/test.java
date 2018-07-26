@@ -17,9 +17,13 @@ public class test{
 
     public static void main(String[] args) {
         // int N = (int)Math.pow(2, 8);
-        int N = 50*60*2;
+        int dfs = 1;
+        int rfs = 3;
+
+        int N = dfs*60*2;
         int N_fft = (int)Math.pow(2,nextPowerOf2(N));
-        int fs = 50;
+
+
 //        // input
 //        double[] bpm = new double[N];
 //        //output
@@ -43,11 +47,13 @@ public class test{
             }
             scanner.close();
 
-            FFTCal fftcal = new FFTCal(bpm,index,fs);
-
-            fftcal.indexcal();
-            System.out.println("index:");
-            for(int i = 0; i<12; i++) System.out.println(index.get(i));
+            FFTCal fftcal = new FFTCal(bpm,index,dfs,rfs,true);
+            for(int i = 0; i<3; i ++){
+                fftcal.indexcal();
+                System.out.println("index:");
+                for(double x:index) System.out.println(x);
+                System.out.println("end");
+            }
         } catch (FileNotFoundException e){
             System.out.print("Data file not found");
         }
@@ -63,6 +69,23 @@ public class test{
             i = i + 1;
         }
         return i;
+    }
+
+    private static int gcf(int a, int b)
+    {
+        while (a != b) // while the two numbers are not equal...
+        {
+            // ...subtract the smaller one from the larger one
+            if (a > b) a -= b; // if a is larger than b, subtract b from a
+            else b -= a; // if b is larger than a, subtract a from b
+        }
+        return a; // or return b, a will be equal to b either way
+    }
+
+    private static int lcm(int a, int b)
+    {
+        // the lcm is simply (a * b) divided by the gcf of the two
+        return (a * b) / gcf(a, b);
     }
 
 }
