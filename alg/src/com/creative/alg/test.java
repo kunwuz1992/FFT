@@ -20,32 +20,34 @@ public class test{
         int N = 50*60*2;
         int N_fft = (int)Math.pow(2,nextPowerOf2(N));
         int fs = 50;
-        // input
-        double[] bpm = new double[N];
-        //output
-        double[] index = new double[12];
-        
-        double[] re = new double[N_fft];
-        double[] im = new double[N_fft];
-
-        double[] power = new double[N_fft/2+1];
-        double[] frequency = new double[N_fft/2+1];
+//        // input
+//        double[] bpm = new double[N];
+//        //output
+//        double[] index = new double[12];
+//
+//        double[] re = new double[N_fft];
+//        double[] im = new double[N_fft];
+//
+//        double[] power = new double[N_fft/2+1];
+//        double[] frequency = new double[N_fft/2+1];
+        ArrayList<Double> bpm = new ArrayList<Double>();
+        ArrayList<Double> index = new ArrayList<Double>();
 
         try{
             Scanner scanner = new Scanner(new File("TestData/test1_hrv_data.csv"));
             for(int i=0; i<N; i++)
             {
-                bpm[i] = Double.parseDouble(scanner.next());
-                re[i] = 60/bpm[i];
-                im[i] = 0;
+                bpm.add(Double.parseDouble(scanner.next()));
+//                re[i] = 60/bpm[i];
+//                im[i] = 0;
             }
             scanner.close();
 
             FFTCal fftcal = new FFTCal(bpm,index,fs);
 
-            fftcal.indexcal(index);
+            fftcal.indexcal();
             System.out.println("index:");
-            for(int i = 0; i<12; i++) System.out.println(index[i]);
+            for(int i = 0; i<12; i++) System.out.println(index.get(i));
         } catch (FileNotFoundException e){
             System.out.print("Data file not found");
         }
