@@ -1,4 +1,4 @@
-package com.creative.alg;
+package alg;
 
 import static java.lang.Math.*;
 
@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.List;
 
-import com.creative.alg.FFTCal;
+import alg.FFTCal;
 
 public class test{
 
