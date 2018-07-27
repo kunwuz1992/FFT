@@ -34,25 +34,28 @@ public class test{
 //
 //        double[] power = new double[N_fft/2+1];
 //        double[] frequency = new double[N_fft/2+1];
-        ArrayList<Double> bpm = new ArrayList<Double>();
+        ArrayList<Double> bpmAll = new ArrayList<Double>();
         ArrayList<Double> index = new ArrayList<Double>();
-
+        ArrayList<Double> bpm = new ArrayList<Double>();
         try{
             Scanner scanner = new Scanner(new File("TestData/test1_hrv_data.csv"));
-            for(int i=0; i<N; i++)
+            while (scanner.hasNext())
             {
-                bpm.add(Double.parseDouble(scanner.next()));
+                bpmAll.add(Double.parseDouble(scanner.next()));
 //                re[i] = 60/bpm[i];
 //                im[i] = 0;
             }
             scanner.close();
-
-            FFTCal fftcal = new FFTCal(bpm,index,dfs,rfs,true);
-            for(int i = 0; i<3; i ++){
+            for(int itx = 0; itx < bpmAll.size()/N; itx ++){
+                bpm.clear();
+                index.clear();
+                bpm.addAll(bpmAll.subList(itx*N,(itx+1)*N));
+                FFTCal fftcal = new FFTCal(bpm,index,dfs,rfs,false);
                 fftcal.indexcal();
-                System.out.println("index:");
-                for(double x:index) System.out.println(x);
-                System.out.println("end");
+                if(index.get(3) <= 0) System.out.println(index.get(3));
+//                System.out.println("index:");
+//                for(double x:index) System.out.println(x);
+//                System.out.println("end");
             }
         } catch (FileNotFoundException e){
             System.out.print("Data file not found");

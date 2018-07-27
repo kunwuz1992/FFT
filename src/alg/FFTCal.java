@@ -173,9 +173,16 @@ public class FFTCal {
         double pLF = 0;
         double pHF = 0;
         double ratio_LFHF = 0;
-
+        int fs = 0;
         double CR = 0;
-        if(isresample) interpolation(bpm,Resamplefs, Devicefs);
+
+
+        if(isresample){
+            interpolation(bpm,Resamplefs, Devicefs);
+            fs = Resamplefs;
+        } else{
+            fs = Devicefs;
+        }
         /* calculate the time domain index */
         for(double x:bpm) {
             if(x > max_hr) max_hr = x;
@@ -192,12 +199,14 @@ public class FFTCal {
         ArrayList<Double> frequency = new ArrayList<>(N_fft/2+1);
 
         /* trasfer the time domian data to the frequency domian */
-        fillspectrum(bpm,Resamplefs,power,frequency);
+        fillspectrum(bpm,fs,power,frequency);
 
         /* find the position of the frequency index*/
         double[] FrequencyIdx = {0.003,0.0033,0.015,0.04,0.15,cr_cutoff,0.4};
+//        List<Integer> Idxnum = new ArrayList<Integer>();
+
         int[] IdxNum = new int[FrequencyIdx.length];
-        for(int i = 0; i<FrequencyIdx.length; i++) IdxNum[i]=(int)(FrequencyIdx[i]*N_fft/Resamplefs);
+        for(int i = 0; i<FrequencyIdx.length; i++) IdxNum[i]=(int)(FrequencyIdx[i]*N_fft/fs);
 
         /* Calculate ULF,VLF,LF and HF*/
         ULF = SumArray(power.subList(0, IdxNum[0]+1));
@@ -230,18 +239,19 @@ public class FFTCal {
         double mTpL = SumArray(power.subList( 0, IdxNum[1]+1));
         double mTpH = SumArray(power.subList( 0, IdxNum[6]+1));
         double mTp = mTpH - mTpL;
-        CR = peakpower/Math.pow(mTp-peakpower, 2);
+        CR = 100*peakpower/Math.pow(mTp-peakpower, 1);
 
 //        pLF = Math.round(pLF);
 //        pHF = Math.round(pHF);
 //        CR = Math.round(CR);
 //
 //        ratio_LFHF = Math.round(ratio_LFHF*100)/100;
-        double pLF1 = 100*LF/(LF+HF);
-        double pLF2 = 100*LF/(LF+VLF+HF);
-
-        Double[] tmp = {max_min_HR, aHR, ULF, VLF, LF_peak, LF, HF_peak, HF, pLF, pHF, ratio_LFHF, CR};
-        if(index.size()>=12) index.clear();
+        double pLF1 = Math.round(100*LF/(LF+HF));
+        double pLF2 = Math.round(100*LF/(LF+VLF+HF));
+//        CR = Math.round(CR);
+//        Double[] tmp = {max_min_HR, aHR, ULF, VLF, LF_peak, LF, HF_peak, HF, pLF, pHF, ratio_LFHF, CR};
+//        if(index.size()>=12) index.clear();
+        Double[] tmp = {max_min_HR, pLF1, pLF2, CR};
         index.addAll(Arrays.asList(tmp));
     }
 
