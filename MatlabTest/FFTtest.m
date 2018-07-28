@@ -5,23 +5,25 @@ close all
 dfs = 1;
 rfs = 3;
 
-isresample = 1;
+isresample = 0;
 N = dfs*60*2;
 
 test_data = csvread('test1_hrv_data.csv');
 % java_data = csvread('test.csv');
 
-if (isresample == 1)
+if (isresample == 0)
     sampled_data = test_data(1:N);
+    fs = dfs;
 else 
     xais = (1:1/dfs:N);
     sampled_data = interp1(xais,test_data(1:N),(1:1/rfs:N),'linear');
+    fs = rfs;
 end
 
 
 %%
 
-fs = rfs;
+
 rri = 60./sampled_data;
 rr_resamp = rri;
 Len_resamp = length(rr_resamp);
