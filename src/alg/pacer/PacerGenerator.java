@@ -1,9 +1,9 @@
-package com.creative.recvdata;
-
-import com.creative.recvdata.PACER;
+package alg.Pacer;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import alg.Pacer.PACER;
 
 public class PacerGenerator {
     private int BreathingRate =0;
@@ -11,6 +11,7 @@ public class PacerGenerator {
 
     /*Input : BreathingRate - the breathing list
     Output: Pacerlist - the pacer partern
+    PacerValue = Sum(Time* Per/100)
         **/
     public PacerGenerator(int BreathingRate, List<PACER> Pacerlist){
         setBreathingRate(BreathingRate);
@@ -35,29 +36,31 @@ public class PacerGenerator {
         int HoldTime = 500; //Holding time
         int BrethTime = SumTime/2-HoldTime; //Breathing time
 
+        int MMsec = 100; // pacer interval: 100ms
 
-        int SlowTimeNum = 4;
-        int SlowTimeMMsec = 50;
-        int SlowTimePer = 2;
+        List<PACER> PacerlistUP = new ArrayList<PACER>(); // patterns for inhaling
+        List<PACER> PacerlistDown = new ArrayList<PACER>(); // patterns for exhaling
 
-        int NormalTimeMMsec = 100;
-        int NormalTimeNum = (BrethTime-SlowTimeMMsec*SlowTimeNum*2)/NormalTimeMMsec;
-        int NormalTimePer = (100 - SlowTimePer*SlowTimeNum*2)/NormalTimeNum;
 
-        List<PACER> PacerlistUP = new ArrayList<PACER>();
-        List<PACER> PacerlistDown = new ArrayList<PACER>();
+        int SlowTimeNum = 5;
+        int SlowTimePer = 3;
+
+        int NormalTimeNum = (BrethTime-2*SlowTimeNum*MMsec)/MMsec;
+        int NormalTimePer = 2;
 
         for(int i = 0; i < SlowTimeNum; i++) {
-            PacerlistUP.add(new PACER(SlowTimeMMsec,SlowTimePer,true));
-            PacerlistDown.add(new PACER(NormalTimeMMsec,NormalTimePer,false));
+            PacerlistUP.add(new PACER(MMsec,SlowTimePer,true));
+            PacerlistDown.add(new PACER(MMsec,NormalTimePer,false));
         }
+
         for(int i = 0; i < NormalTimeNum; i++){
-            PacerlistUP.add(new PACER(NormalTimeMMsec,NormalTimePer,true));
-            PacerlistDown.add(new PACER(SlowTimeMMsec,SlowTimePer,false));
+            PacerlistUP.add(new PACER(MMsec,NormalTimePer,true));
+            PacerlistDown.add(new PACER(MMsec,SlowTimePer,false));
         }
+
         for(int i = 0; i < SlowTimeNum; i++) {
-            PacerlistUP.add(new PACER(SlowTimeMMsec,SlowTimePer,true));
-            PacerlistDown.add(new PACER(SlowTimeMMsec,SlowTimePer,false));
+            PacerlistUP.add(new PACER(MMsec,SlowTimePer,true));
+            PacerlistDown.add(new PACER(MMsec,NormalTimePer,false));
         }
 
         Pacerlist.addAll(PacerlistUP);

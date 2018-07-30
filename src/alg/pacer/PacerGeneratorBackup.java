@@ -1,4 +1,4 @@
-package com.creative.recvdata;
+package alg.Pacer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -60,7 +60,7 @@ public class PacerGeneratorBackup {
     }
 
     public void setBreathingRate(int BreathingRate) {
-        this.BreathingRate = BreathingRate;;
+        this.BreathingRate = BreathingRate;
     }
 
     public void setPacerlist(List<PACER> Pacerlist) {
