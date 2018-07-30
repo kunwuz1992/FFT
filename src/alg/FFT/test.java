@@ -1,4 +1,4 @@
-package alg;
+package alg.FFT;
 
 import static java.lang.Math.*;
 
@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.List;
 
-import alg.FFTCal;
+import alg.FFT.FFTCal;
 
 public class test{
 
@@ -50,7 +50,7 @@ public class test{
                 bpm.clear();
                 index.clear();
                 bpm.addAll(bpmAll.subList(itx*N,(itx+1)*N));
-                FFTCal fftcal = new FFTCal(bpm,index,dfs,rfs,false);
+                FFTCal fftcal = new FFTCal(bpm,index,dfs,rfs,true);
                 fftcal.indexcal();
                 if(index.get(3) <= 0) System.out.println(index.get(3));
 //                System.out.println("index:");

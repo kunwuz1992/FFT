@@ -1,4 +1,4 @@
-package alg;
+package alg.FFT;
 
 import java.util.Arrays;
 import java.util.ArrayList;
@@ -255,7 +255,7 @@ public class FFTCal {
         index.addAll(Arrays.asList(tmp));
     }
 
-    private static void interpolation(ArrayList<Double> bpmlist, int resamplefs, int devicefs){
+    private void  interpolation(ArrayList<Double> bpmlist, int resamplefs, int devicefs){
         /* resample the bpm signal with the frequency refs*/
         int newfs = lcm(resamplefs, devicefs);
         int mul = newfs/devicefs;
@@ -269,13 +269,8 @@ public class FFTCal {
             for (int j =0; j < mul; j++) newbpm.add(bpmlist.get(i)+dif*j/mul);
         }
         newbpm.add(bpmlist.get(bpmlist.size()-1));
-
-        int newlen = bpmlist.size();
-
-        bpmlist.clear();
-        for (int i = 0; i < newlen; i ++) {
-            bpmlist.add(newbpm.get(i * resamplefs));
-        }
+        bpm.clear();
+        bpm.addAll(newbpm);
     }
 
     private static int gcf(int a, int b)
