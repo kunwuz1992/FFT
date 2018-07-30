@@ -1,4 +1,4 @@
-package alg.Pacer;
+package alg;
 
 public class PACER{
     public int getMmSecUsed() {

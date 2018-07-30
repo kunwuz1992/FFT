@@ -1,9 +1,9 @@
-package alg.Pacer;
+package alg;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import alg.Pacer.PACER;
+import alg.PACER;
 
 public class PacerGenerator {
     private int BreathingRate =0;

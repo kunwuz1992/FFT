@@ -1,4 +1,4 @@
-package alg.FFT;
+package alg;
 
 import java.util.Arrays;
 import java.util.ArrayList;
