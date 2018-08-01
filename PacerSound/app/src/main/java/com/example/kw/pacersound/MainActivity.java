@@ -9,6 +9,8 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.example.kw.pacersound.alg.PacerSoundGenerator;
+
 public class MainActivity extends AppCompatActivity {
 
     @Override
@@ -17,6 +19,9 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        PacerSoundGenerator pacerSoundGenerator = new PacerSoundGenerator(this, 6);
+        pacerSoundGenerator.StartTest();
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {

@@ -14,20 +14,22 @@
 package com.example.kw.pacersound.alg.wav;
 
 import android.content.Context;
+import android.renderscript.ScriptGroup;
 import android.util.Log;
 
 import java.io.DataInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 
-public class WavFileReader {
+public class WavFileReader{
 
     private static final String TAG = WavFileReader.class.getSimpleName();
 
-    public DataInputStream mDataInputStream;
+    private DataInputStream mDataInputStream;
     private WavFileHeader mWavFileHeader;
 
     public boolean openFile(String filepath) throws IOException {
@@ -35,6 +37,14 @@ public class WavFileReader {
             closeFile();
         }
         mDataInputStream = new DataInputStream(new FileInputStream(filepath));
+        return readHeader();
+    }
+
+    public boolean openFile(InputStream Inputstream) throws IOException {
+        if (mDataInputStream != null) {
+            closeFile();
+        }
+        mDataInputStream = new DataInputStream(Inputstream);
         return readHeader();
     }
 
