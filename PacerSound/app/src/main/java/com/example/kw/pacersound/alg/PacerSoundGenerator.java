@@ -43,7 +43,6 @@ public class PacerSoundGenerator extends Activity{
             byte[] buffer = new byte[2*SAMPLES_PER_FRAME];
             mWavFileReader.readData(buffer, 0, buffer.length);
             System.out.print(buffer.length);
-
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -53,7 +52,7 @@ public class PacerSoundGenerator extends Activity{
     }
 
     private void setWaveRate(int WaveRate) {
-        this.WaveRate = WaveRate;;
+        this.WaveRate = WaveRate;
     }
 
     private void setPacerlist(List Pacerlist) {
@@ -63,5 +62,4 @@ public class PacerSoundGenerator extends Activity{
     private void setContext(Context context) {
         this.context = context;
     }
-
 }
