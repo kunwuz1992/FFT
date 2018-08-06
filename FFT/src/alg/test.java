@@ -1,94 +1,76 @@
 package alg;
 
-import static java.lang.Math.*;
-
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.PrintWriter;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.List;
 
-import alg.FFTCal;
 
 public class test{
 
-    public static void main(String[] args) {
-        // int N = (int)Math.pow(2, 8);
-        int dfs = 1;
-        int rfs = 3;
+    private static String TEST_FILE_PATH = "TestData/test1_hrv_data.csv";
 
-        int N = dfs*60*2;
-        int N_fft = (int)Math.pow(2,nextPowerOf2(N));
+    private static int DEV_HZ = 1; //device frequency
+    private static int RESAMPLE_HZ = 3; //Resample frequency
 
+    private static int _PR_For_Index_MAX = 30; //The length of the data window
 
-//        // input
-//        double[] bpm = new double[N];
-//        //output
-//        double[] index = new double[12];
-//
-//        double[] re = new double[N_fft];
-//        double[] im = new double[N_fft];
-//
-//        double[] power = new double[N_fft/2+1];
-//        double[] frequency = new double[N_fft/2+1];
-        ArrayList<Double> bpmAll = new ArrayList<Double>();
-        ArrayList<Double> index = new ArrayList<Double>();
-        ArrayList<Double> bpm = new ArrayList<Double>();
-        try{
-            Scanner scanner = new Scanner(new File("TestData/test1_hrv_data.csv"));
-            while (scanner.hasNext())
-            {
-                bpmAll.add(Double.parseDouble(scanner.next()));
-//                re[i] = 60/bpm[i];
-//                im[i] = 0;
-            }
-            scanner.close();
-            for(int itx = 0; itx < bpmAll.size()/N; itx ++){
-                bpm.clear();
-                index.clear();
-                bpm.addAll(bpmAll.subList(itx*N,(itx+1)*N));
-                FFTCal fftcal = new FFTCal(bpm,index,dfs,rfs,true);
-                fftcal.indexcal();
-                if(index.get(3) <= 0) System.out.println(index.get(3));
-//                System.out.println("index:");
-//                for(double x:index) System.out.println(x);
-//                System.out.println("end");
-            }
-        } catch (FileNotFoundException e){
-            System.out.print("Data file not found");
+    public static void main(String[] args) throws IOException {
+
+        int nPR;
+        int PR_For_FFT_Index = 0;
+
+        ArrayList<Double> _PR_For_Index = new ArrayList<>();
+        ArrayList<Double> _Index_From_PR = new ArrayList<>();
+
+        ArrayList<Double> bpmAll = new ArrayList<>();
+
+        //Save nPR data into a list
+        Scanner scanner = new Scanner(new File(TEST_FILE_PATH));
+        while (scanner.hasNext()) {
+            bpmAll.add(Double.parseDouble(scanner.next()));
         }
-    }
+        scanner.close();
 
-    private static int nextPowerOf2(final int a)
-    {
-        int b = 1;
-        int i = 0;
-        while (b < a)
+        // read nPR data from list
+        double endPR;// the lastest nPR data in the list for PR calculation
+        double diff;
+        int count = 0;
+        while(bpmAll.size()>0)
         {
-            b = b << 1;
-            i = i + 1;
+            nPR = bpmAll.remove(0).intValue();
+            if (PR_For_FFT_Index < _PR_For_Index_MAX) {
+                if (nPR != 0) {
+                    //Resample the nPR with the new sampling rate RESAMPLE_HZ
+                    if (PR_For_FFT_Index == 0) _PR_For_Index.add((double) nPR);
+                    endPR = _PR_For_Index.get(_PR_For_Index.size() - 1);
+                    diff = ((double) nPR - endPR) / RESAMPLE_HZ;
+                    for (int i = 1; i <= RESAMPLE_HZ; i++) {
+                        _PR_For_Index.add(endPR + diff * i);
+                    }
+                    PR_For_FFT_Index++;
+                }
+            } else {
+                _Index_From_PR.clear();
+                endPR = _PR_For_Index.get(_PR_For_Index.size() - 1);
+                diff = ((double) nPR - endPR) / RESAMPLE_HZ;
+                for (int i = 1; i <= RESAMPLE_HZ; i++) {
+                    _PR_For_Index.remove(0);
+                    _PR_For_Index.add(endPR + diff * i);
+                }
+                FFTCal fftCal = new FFTCal(_PR_For_Index, _Index_From_PR, RESAMPLE_HZ);
+                fftCal.indexcal();
+                count = count + 1;
+
+                //output
+                System.out.println("Start:" + count);
+                for (double x: _Index_From_PR) System.out.println(x);
+                System.out.println("End");
+            }
         }
-        return i;
     }
-
-    private static int gcf(int a, int b)
-    {
-        while (a != b) // while the two numbers are not equal...
-        {
-            // ...subtract the smaller one from the larger one
-            if (a > b) a -= b; // if a is larger than b, subtract b from a
-            else b -= a; // if b is larger than a, subtract a from b
-        }
-        return a; // or return b, a will be equal to b either way
-    }
-
-    private static int lcm(int a, int b)
-    {
-        // the lcm is simply (a * b) divided by the gcf of the two
-        return (a * b) / gcf(a, b);
-    }
-
 }
