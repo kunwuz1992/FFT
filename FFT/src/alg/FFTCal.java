@@ -1,4 +1,4 @@
-package alg;
+package com.wisdom.alg;
 
 import java.util.Arrays;
 import java.util.ArrayList;
@@ -9,36 +9,32 @@ public class FFTCal {
     //[max_min_HR aHR ULF VLF LF_peak LF HF_peak HF pLF pHF ratio_LFHF CR]
     /**
      * Ouput
-            - Time domain
-                -max_min_HR: average difference between the highest HR and the lowest HR in each respiratory circle during at least 2-min time duration
-                -aHR: average heart rate
-            - Frequency domain
-                -ULF: absolute power of the ultra-low-frequency band (<=0.003 Hz)
-                -VLF: absolute power of the very-low-frequency band (0.003~0.04 Hz)
-                -LF:  absolute power of the low-frequency band (0.04~0.15 Hz)
-                -LF_peak: peak frequency of the low-frequency band (0.04~0.15 Hz)
-                -HF: absolute power of the high-frequency band
-                -HF_peak: peak frequency of the high-frequency band (0.15~0.4 Hz)
-                -pLF: relative power of LF power, suggested to calculate by (LF power) / (VFL power + HF power)
-                -pHF: relative power of HF power, suggested to calculate by (HF power) / (VFL power + LF power)
-                -ratio_LFHF: ratio of LF power to HF power
-                -CR: the power in (0.015 ~ peak frequency Hz) to the power in (0.003 ~ 0.4 Hz)
-        - ver001 created on Jul. 12, 2018
+     - Time domain
+     -max_min_HR: average difference between the highest HR and the lowest HR in each respiratory circle during at least 2-min time duration
+     -aHR: average heart rate
+     - Frequency domain
+     -ULF: absolute power of the ultra-low-frequency band (<=0.003 Hz)
+     -VLF: absolute power of the very-low-frequency band (0.003~0.04 Hz)
+     -LF:  absolute power of the low-frequency band (0.04~0.15 Hz)
+     -LF_peak: peak frequency of the low-frequency band (0.04~0.15 Hz)
+     -HF: absolute power of the high-frequency band
+     -HF_peak: peak frequency of the high-frequency band (0.15~0.4 Hz)
+     -pLF: relative power of LF power, suggested to calculate by (LF power) / (VFL power + HF power)
+     -pHF: relative power of HF power, suggested to calculate by (HF power) / (VFL power + LF power)
+     -ratio_LFHF: ratio of LF power to HF power
+     -CR: the power in (0.015 ~ peak frequency Hz) to the power in (0.003 ~ 0.4 Hz)
+     - ver001 created on Jul. 12, 2018
      */
-
     private ArrayList<Double>  index;
     private ArrayList<Double> bpm;
-    private int Devicefs;
-    private int Resamplefs;
-    private boolean isresample;
+    private int fs;
+    private final int resamplefs = 2;
 
 
-    public FFTCal(ArrayList<Double> bpm, ArrayList index, int dfs, int rfs, boolean isresample){
+    public FFTCal(ArrayList<Double> bpm, ArrayList index, int devicefs){
         this.bpm = bpm;
         this.index = index;
-        this.Devicefs = dfs;
-        this.Resamplefs = rfs;
-        this.isresample = isresample;
+        this.fs = devicefs;
     }
 
     private static void FFT(int n, List<Double> x, List<Double> y) {
@@ -115,10 +111,14 @@ public class FFTCal {
         List<Double> re = new ArrayList<Double>(N_fft);
         List<Double> im = new ArrayList<Double>(N_fft);
 
+        double sum = 0;
+        for(Double x:bpm) sum = sum+60/x;
+        double avg = sum/bpm.size();
+
         for(int i = 0; i < N_fft; i++)
         {
             if(i < bpm.size()){
-                re.add(60/bpm.get(i));
+                re.add(60/bpm.get(i)-avg);
                 im.add(0.0);
             } else if (i>=bpm.size()){
                 im.add(0.0);
@@ -129,7 +129,7 @@ public class FFTCal {
         FFT(N_fft,re,im);
 
         for(int i = 0; i < N_fft/2+1; i++){
-            power.add(2*(Math.pow(re.get(i)/bpm.size(), 2)+Math.pow(im.get(i)/bpm.size(), 2)));
+            power.add(2.0/bpm.size()*(Math.pow(re.get(i), 2)+Math.pow(im.get(i), 2)));
             frequency.add(0.5*fs*i/N_fft*2);
         }
     }
@@ -173,16 +173,9 @@ public class FFTCal {
         double pLF = 0;
         double pHF = 0;
         double ratio_LFHF = 0;
-        int fs = 0;
+
         double CR = 0;
 
-
-        if(isresample){
-            interpolation(bpm,Resamplefs, Devicefs);
-            fs = Resamplefs;
-        } else{
-            fs = Devicefs;
-        }
         /* calculate the time domain index */
         for(double x:bpm) {
             if(x > max_hr) max_hr = x;
@@ -203,8 +196,6 @@ public class FFTCal {
 
         /* find the position of the frequency index*/
         double[] FrequencyIdx = {0.003,0.0033,0.015,0.04,0.15,cr_cutoff,0.4};
-//        List<Integer> Idxnum = new ArrayList<Integer>();
-
         int[] IdxNum = new int[FrequencyIdx.length];
         for(int i = 0; i<FrequencyIdx.length; i++) IdxNum[i]=(int)(FrequencyIdx[i]*N_fft/fs);
 
@@ -239,55 +230,19 @@ public class FFTCal {
         double mTpL = SumArray(power.subList( 0, IdxNum[1]+1));
         double mTpH = SumArray(power.subList( 0, IdxNum[6]+1));
         double mTp = mTpH - mTpL;
-        CR = 100*peakpower/Math.pow(mTp-peakpower, 1);
+        CR = 100*peakpower/Math.pow(mTp-peakpower, 2);
+        //CR = Math.abs(100.0 * peakpower/Ma(mTp - peakpower));
+
+        double pLF1 = Math.round(LF/HF*100);
+        double pLF2 = Math.round(LF/(LF+HF)*100);
+        pLF = Math.round(LF/(LF+HF+VLF)*100);
 
 //        pLF = Math.round(pLF);
 //        pHF = Math.round(pHF);
-//        CR = Math.round(CR);
-//
-//        ratio_LFHF = Math.round(ratio_LFHF*100)/100;
-        double pLF1 = Math.round(100*LF/(LF+HF));
-        double pLF2 = Math.round(100*LF/(LF+VLF+HF));
-//        CR = Math.round(CR);
+        CR = Math.round(CR);
+//        ratio_LFHF = Math.round(ratio_LFHF);
+        Double[] tmp = {pLF,pLF1,pLF2,CR};
 //        Double[] tmp = {max_min_HR, aHR, ULF, VLF, LF_peak, LF, HF_peak, HF, pLF, pHF, ratio_LFHF, CR};
-//        if(index.size()>=12) index.clear();
-        Double[] tmp = {max_min_HR, pLF1, pLF2, CR};
         index.addAll(Arrays.asList(tmp));
     }
-
-    // private void  interpolation(ArrayList<Double> bpmlist, int resamplefs, int devicefs){
-    //     /* resample the bpm signal with the frequency refs*/
-    //     int newfs = lcm(resamplefs, devicefs);
-    //     int mul = newfs/devicefs;
-
-    //     double dif = 0;
-
-    //     ArrayList<Double> newbpm = new ArrayList<Double>();
-
-    //     for (int i = 0; i <bpmlist.size()-1; i ++){
-    //         dif = bpmlist.get(i+1) - bpmlist.get(i);
-    //         for (int j =0; j < mul; j++) newbpm.add(bpmlist.get(i)+dif*j/mul);
-    //     }
-    //     newbpm.add(bpmlist.get(bpmlist.size()-1));
-    //     bpm.clear();
-    //     bpm.addAll(newbpm);
-    // }
-
-    // private static int gcf(int a, int b)
-    // {
-    //     while (a != b) // while the two numbers are not equal...
-    //     {
-    //         // ...subtract the smaller one from the larger one
-    //         if (a > b) a -= b; // if a is larger than b, subtract b from a
-    //         else b -= a; // if b is larger than a, subtract a from b
-    //     }
-    //     return a; // or return b, a will be equal to b either way
-    // }
-
-    // private static int lcm(int a, int b)
-    // {
-    //     // the lcm is simply (a * b) divided by the gcf of the two
-    //     return (a * b) / gcf(a, b);
-    // }
-
 }
