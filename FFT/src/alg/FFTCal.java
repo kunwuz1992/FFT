@@ -255,39 +255,39 @@ public class FFTCal {
         index.addAll(Arrays.asList(tmp));
     }
 
-    private void  interpolation(ArrayList<Double> bpmlist, int resamplefs, int devicefs){
-        /* resample the bpm signal with the frequency refs*/
-        int newfs = lcm(resamplefs, devicefs);
-        int mul = newfs/devicefs;
+    // private void  interpolation(ArrayList<Double> bpmlist, int resamplefs, int devicefs){
+    //     /* resample the bpm signal with the frequency refs*/
+    //     int newfs = lcm(resamplefs, devicefs);
+    //     int mul = newfs/devicefs;
 
-        double dif = 0;
+    //     double dif = 0;
 
-        ArrayList<Double> newbpm = new ArrayList<Double>();
+    //     ArrayList<Double> newbpm = new ArrayList<Double>();
 
-        for (int i = 0; i <bpmlist.size()-1; i ++){
-            dif = bpmlist.get(i+1) - bpmlist.get(i);
-            for (int j =0; j < mul; j++) newbpm.add(bpmlist.get(i)+dif*j/mul);
-        }
-        newbpm.add(bpmlist.get(bpmlist.size()-1));
-        bpm.clear();
-        bpm.addAll(newbpm);
-    }
+    //     for (int i = 0; i <bpmlist.size()-1; i ++){
+    //         dif = bpmlist.get(i+1) - bpmlist.get(i);
+    //         for (int j =0; j < mul; j++) newbpm.add(bpmlist.get(i)+dif*j/mul);
+    //     }
+    //     newbpm.add(bpmlist.get(bpmlist.size()-1));
+    //     bpm.clear();
+    //     bpm.addAll(newbpm);
+    // }
 
-    private static int gcf(int a, int b)
-    {
-        while (a != b) // while the two numbers are not equal...
-        {
-            // ...subtract the smaller one from the larger one
-            if (a > b) a -= b; // if a is larger than b, subtract b from a
-            else b -= a; // if b is larger than a, subtract a from b
-        }
-        return a; // or return b, a will be equal to b either way
-    }
+    // private static int gcf(int a, int b)
+    // {
+    //     while (a != b) // while the two numbers are not equal...
+    //     {
+    //         // ...subtract the smaller one from the larger one
+    //         if (a > b) a -= b; // if a is larger than b, subtract b from a
+    //         else b -= a; // if b is larger than a, subtract a from b
+    //     }
+    //     return a; // or return b, a will be equal to b either way
+    // }
 
-    private static int lcm(int a, int b)
-    {
-        // the lcm is simply (a * b) divided by the gcf of the two
-        return (a * b) / gcf(a, b);
-    }
+    // private static int lcm(int a, int b)
+    // {
+    //     // the lcm is simply (a * b) divided by the gcf of the two
+    //     return (a * b) / gcf(a, b);
+    // }
 
 }
