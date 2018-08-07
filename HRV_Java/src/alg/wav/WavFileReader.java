@@ -11,7 +11,7 @@
  *  @author  Jhuster
  *  @date    2016/03/19
  */
-package wav;
+package alg.wav;
 
 import java.io.DataInputStream;
 import java.io.FileInputStream;

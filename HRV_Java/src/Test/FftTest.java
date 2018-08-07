@@ -1,16 +1,13 @@
-package alg;
+package Test;
+
+import alg.FFTCal;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Scanner;
-import java.util.List;
 
-
-public class test{
+public class FftTest {
 
     private static String TEST_FILE_PATH = "TestData/test1_hrv_data.csv";
 
@@ -73,4 +70,5 @@ public class test{
             }
         }
     }
+
 }

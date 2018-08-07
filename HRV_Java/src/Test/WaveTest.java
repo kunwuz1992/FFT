@@ -1,10 +1,11 @@
-package wav;
+package Test;
+
+import alg.wav.WavFileHeader;
+import alg.wav.WavFileReader;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
-
-import static java.nio.ByteBuffer.allocate;
 
 public class WaveTest {
     /*

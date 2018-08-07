@@ -9,7 +9,7 @@ public class PacerGenerator {
     private int BreathingRate =0;
     private List<PACER> Pacerlist = new ArrayList<PACER>();
     private int diff;
-    private int PacerVal;
+    public int PacerVal;
     /*Input : BreathingRate - the breathing list
     Output: Pacerlist - the pacer partern
     PacerValue = Sum(Time* Per/100)
