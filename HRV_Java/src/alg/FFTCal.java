@@ -111,6 +111,7 @@ public class FFTCal {
         List<Double> re = new ArrayList<Double>(N_fft);
         List<Double> im = new ArrayList<Double>(N_fft);
 
+        //对要进行FFT的序列进行预处理
         double sum = 0;
         for(Double x:bpm) sum = sum+60/x;
         double avg = sum/bpm.size();
