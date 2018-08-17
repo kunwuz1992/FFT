@@ -11,7 +11,7 @@
  *  @author  Jhuster
  *  @date    2016/03/19
  */
-package com.example.kw.pacersound.alg.wav;
+package com.example.kw.pacersound.alg.wav.WavReadWrite;
 
 public class WavFileHeader {
 

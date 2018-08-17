@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class PacerGenerator {
+public class PacerGenerator0816 {
     // Pacer
     private int BreathingRate =0;
     private List<PACER> Pacerlist = new ArrayList<PACER>();
@@ -24,20 +24,18 @@ public class PacerGenerator {
     private WavGenerator ExhaustGenerator;
     private byte[] InhaustArray;
     private byte[] ExhaustArray;
-    private List<byte[]> inHaust = new ArrayList<>();
-    private List<byte[]> exHaust = new ArrayList<>();
+    private List<byte[]> Wavlist = new ArrayList<>();
     private final int ORIGIN_SOUND_LENGTH = 4;// The length of the source file
     private float rate = 1.0f;
     private int quality = 0;
-    private int BufferSize;
+
 
     /*Input : BreathingRate - the breathing list
     Output: Pacerlist - the pacer partern
     PacerValue = Sum(Time* Per/100)
         **/
-    public PacerGenerator(Context context ,int BreathingRate, int size){
+    public PacerGenerator0816(Context context , int BreathingRate){
         setBreathingRate(BreathingRate);
-        this.BufferSize = size;
         try{
             InputStream InhausStream = context.getResources().openRawResource(R.raw.test);
             InputStream ExhausStream = context.getResources().openRawResource(R.raw.test);
@@ -50,10 +48,9 @@ public class PacerGenerator {
     }
     public void generation(){
         StepTimeInit();
-        if (SoundGeneration()){
-            wavBytes2List();
+        if (SoundGeneration())
             stepgeneration();
-        } else
+        else
             throw new NullPointerException("Sound generation failed");
     }
     /*--------------Pace pattern--------------------------------------------*/
@@ -71,8 +68,13 @@ public class PacerGenerator {
         int MMsec = 100; // pacer interval: 100ms
         int Steps = BreathTime/MMsec;
 
+        //Sound buffer length per percentage
+        int BufferSize = InhaustArray.length/100;
+
         List<PACER> PacerlistUP = new ArrayList<PACER>(); // patterns for inhaling
         List<PACER> PacerlistDown = new ArrayList<PACER>(); // patterns for exhaling
+        List<byte[]> WavlistUP = new ArrayList<byte[]>(); // patterns for inhaling
+        List<byte[]> WavlistDown = new ArrayList<byte[]>(); // patterns for exhaling
 
         int SlowTimeNum = (int) Math.round(0.1*Steps);
         int SlowTimePer = Math.round(15/SlowTimeNum);
@@ -91,6 +93,12 @@ public class PacerGenerator {
         for(int i = 0; i < SlowTimeNum; i++) {
             PacerlistUP.add(new PACER(MMsec,SlowTimePer,true));
             PacerlistDown.add(new PACER(MMsec,SlowTimePer,false));
+
+            byte[] inbuffer = Arrays.copyOfRange(InhaustArray, BufferSize*PacerValue,BufferSize*(PacerValue + SlowTimePer));
+            byte[] exbuffer = Arrays.copyOfRange(ExhaustArray, BufferSize*PacerValue,BufferSize*(PacerValue + SlowTimePer));
+            WavlistUP.add(inbuffer);
+            WavlistDown.add(exbuffer);
+
             PacerValue = PacerValue + SlowTimePer;
         }
 
@@ -105,12 +113,23 @@ public class PacerGenerator {
             PacerlistUP.add(new PACER(MMsec,per,true));
             PacerlistDown.add(new PACER(MMsec,per,false));
 
+            byte[] inbuffer = Arrays.copyOfRange(InhaustArray, BufferSize*PacerValue,BufferSize*(PacerValue + per));
+            byte[] exbuffer = Arrays.copyOfRange(ExhaustArray, BufferSize*PacerValue,BufferSize*(PacerValue + per));
+            WavlistUP.add(inbuffer);
+            WavlistDown.add(exbuffer);
+
             PacerValue = PacerValue + per;
         }
 
         for(int i = 0; i < SlowTimeNum; i++) {
             PacerlistUP.add(new PACER(MMsec,SlowTimePer,true));
             PacerlistDown.add(new PACER(MMsec,SlowTimePer,false));
+
+            byte[] inbuffer = Arrays.copyOfRange(InhaustArray, BufferSize*PacerValue,BufferSize*(PacerValue + SlowTimePer));
+            byte[] exbuffer = Arrays.copyOfRange(ExhaustArray, BufferSize*PacerValue,BufferSize*(PacerValue + SlowTimePer));
+            WavlistUP.add(inbuffer);
+            WavlistDown.add(exbuffer);
+
             PacerValue = PacerValue + SlowTimePer;
         }
 
@@ -119,6 +138,10 @@ public class PacerGenerator {
 
         Pacerlist.addAll(PacerlistUP);
         Pacerlist.addAll(PacerlistDown);
+
+        Wavlist.addAll(WavlistUP);
+        Wavlist.addAll(WavlistDown);
+
         if(PacerValue >= 100) PacerValue = 0;
     }
 
@@ -145,20 +168,6 @@ public class PacerGenerator {
         } else
             return false;
     }
-    private void wavBytes2List(){
-        inHaust = new ArrayList<>();
-        exHaust = new ArrayList<>();
-        int itr = InhaustArray.length/BufferSize;
-        for(int i = 0; i <= itr; i++){
-            int end = (i+1)*BufferSize;
-            if(end > InhaustArray.length) end = InhaustArray.length;
-            byte[] in = Arrays.copyOfRange(InhaustArray,i*BufferSize,end);
-            byte[] ex = Arrays.copyOfRange(ExhaustArray,i*BufferSize,end);
-            inHaust.add(in);
-            exHaust.add(ex);
-        }
-    }
-
 
     public void setSoundRate(float _rate){
         this.rate = _rate;
@@ -167,11 +176,8 @@ public class PacerGenerator {
         this.quality = _quality;
     }
 
-    public List<byte[]> getExHaust() {
-        return exHaust;
+    public List<byte[]> getWavlist(){
+        return Wavlist;
     }
 
-    public List<byte[]> getInHaust() {
-        return inHaust;
-    }
 }

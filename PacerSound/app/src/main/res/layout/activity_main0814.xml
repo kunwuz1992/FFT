@@ -9,55 +9,18 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"/>
-    <LinearLayout
-        android:id="@+id/linelay_TextView"
+
+    <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="5dp"
-        android:gravity="center_horizontal|bottom"
-        android:orientation="horizontal">
+        android:text="默认BMP: 6" />
 
-        <TextView
-            android:layout_width="214dp"
-            android:layout_height="wrap_content"
-            android:text="默认BMP: 6" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="当前BPM: " />
-
-        <TextView
-            android:id="@+id/textCurrentBpm"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/linelay_input"
+    <EditText
+        android:id="@+id/InputFS"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="5dp"
-        android:gravity="center_horizontal|bottom"
-        android:orientation="horizontal">
-
-        <EditText
-            android:id="@+id/InputFS"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="left"
-            android:layout_marginRight="20dp"
-            android:ems="10"
-            android:inputType="number" />
-
-        <Button
-            android:id="@+id/btnSetRS"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="right"
-            android:text="设置BPM" />
-    </LinearLayout>
+        android:ems="10"
+        android:inputType="number" />
 
     <LinearLayout
         android:id="@+id/linelay_bottom"
@@ -66,6 +29,20 @@
         android:layout_marginBottom="5dp"
         android:gravity="center_horizontal|bottom"
         android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btnStartTest"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="开始测试"
+            android:layout_marginRight="10dp"/>
+
+        <Button
+            android:id="@+id/btnStopTest"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="停止测试"
+            android:layout_marginRight="10dp" />
 
         <Button
             android:id="@+id/btnOpenPacer"

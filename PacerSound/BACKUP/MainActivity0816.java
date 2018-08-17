@@ -22,10 +22,13 @@ import com.example.kw.pacersound.recvdata.PacerPattern;
 import java.util.Arrays;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity0816 extends AppCompatActivity {
     private Spinner mTestSpinner;
     private EditText InputReFs;
-
+    //Sound data
+    //Thread for draw pacer
+    private int soundIndex;
+    private boolean isUpdate;
     //Pacer
     private PacerPattern pacerPattern;
     private Thread drawPacerThread;
@@ -48,32 +51,19 @@ public class MainActivity extends AppCompatActivity {
             "播放速度 x3",
     };
 
-    private int SoundIndex = 0;
     private Handler playHandler = new Handler(){
         @Override
         public void handleMessage(Message msg){
             if (pacerPattern.PACEPATTERNUSED >= 0){
                 if(pacerPattern.PACERSOUNDUSED >= 0){
-                    boolean isHold = msg.getData().getBoolean("PacerHold");
-                    boolean inHalse = msg.getData().getBoolean("inHalse");
-                    int pacerValue = msg.getData().getInt("PacerValue");
-                    if(!isHold){
-                        if(inHalse){
-                            int end = 1+pacerPattern.getInWav().size()*pacerValue/100;
-                            if(end >= pacerPattern.getInWav().size()) end = pacerPattern.getInWav().size();
-                            for(int i = SoundIndex; i < end; i++){
-                                byte[] buffer = pacerPattern.getInWav().get(i);
-                                PlayerPlay(buffer);
-                            }
-                            SoundIndex = end;
-                        } else{
-                            int end = -1+pacerPattern.getInWav().size()*pacerValue/100;
-                            if(end <= 0) end = 0;
-                            for(int i = SoundIndex; i > end; i--){
-                                byte[] buffer = pacerPattern.getInWav().get(pacerPattern.getInWav().size()-i);
-                                PlayerPlay(buffer);
-                            }
-                            SoundIndex = end;
+                    isUpdate = msg.getData().getBoolean("PacerUpdate");
+                    soundIndex = msg.getData().getInt("SoundIndex");
+                    if(isUpdate){
+                        try {
+                            byte[] buffer = pacerPattern.getWav().get(soundIndex);
+                            PlayerPlay(buffer);
+                        } catch (Exception e){
+                            e.printStackTrace();
                         }
                     }
                 } else {
@@ -102,7 +92,7 @@ public class MainActivity extends AppCompatActivity {
         PlayerInit();
     }
 
-    private OnClickListener ctrlListener = new View.OnClickListener() {
+    private OnClickListener ctrlListener = new OnClickListener() {
         @Override
         public void onClick(View v) {
             if (v.getId() == R.id.btnOpenPacer) {
@@ -158,15 +148,13 @@ public class MainActivity extends AppCompatActivity {
     {
         if(pacerOn) {
             //Set pacer bpm
-            int buffersize = mAudioPlayer.getBufferSize();
-            PacerGenerator pg = new PacerGenerator(this,rs,buffersize);
+            PacerGenerator pg = new PacerGenerator(this,rs,0);
             pg.generation();
             if(pacerPattern==null)
                 pacerPattern= new PacerPattern();
             pacerPattern.AddPacers(0, pg.getPacerlist());
-            pacerPattern.setExHAUSTWAV(pg.getExHaust());
-            pacerPattern.setINHAUSTWAV(pg.getInHaust());
             pacerPattern.PACEPATTERNUSED = 0;
+            pacerPattern.AddWav(0,pg.getWavlist());
         }else {
             if(pacerPattern!=null) pacerPattern.PACEPATTERNUSED = -1;
         }
@@ -209,7 +197,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void PlayerPlay(byte[] Wavbytes){
-        mAudioPlayer.play(Wavbytes, 0, Wavbytes.length);
+        int buffersize = mAudioPlayer.getBufferSize();
+        byte[] buffer;
+        int PlayedBytes = 0;
+        int endBytes = 0;
+        if(Wavbytes.length <= buffersize)
+        {
+            mAudioPlayer.play(Wavbytes, 0, Wavbytes.length);
+        } else{
+            while (PlayedBytes < Wavbytes.length){
+                endBytes = PlayedBytes + buffersize;
+                if(endBytes > Wavbytes.length) endBytes = Wavbytes.length;
+                buffer = Arrays.copyOfRange(Wavbytes,PlayedBytes,endBytes);
+                mAudioPlayer.play(buffer, 0, buffer.length);
+                PlayedBytes = endBytes;
+            }
+        }
         PLATER_STATE = PLAYSTATE_PLAYING;
     }
 }

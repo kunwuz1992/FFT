@@ -1,4 +1,10 @@
 <resources>
     <string name="app_name">PacerSound</string>
     <string name="action_settings">Settings</string>
+
+    <string name="app_main_pacer_on">打开节拍器</string>
+    <string name="app_main_pacer_off">关闭节拍器</string>
+
+    <string name="app_main_pacer_sound_on">打开声音</string>
+    <string name="app_main_pacer_sound_off">关闭声音</string>
 </resources>

@@ -11,11 +11,7 @@
  *  @author  Jhuster
  *  @date    2016/03/19
  */
-package com.example.kw.pacersound.alg.wav;
-
-import android.content.Context;
-import android.renderscript.ScriptGroup;
-import android.util.Log;
+package com.example.kw.pacersound.alg.wav.WavReadWrite;
 
 import java.io.DataInputStream;
 import java.io.FileInputStream;
@@ -24,13 +20,13 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-
-public class WavFileReader{
+public class WavFileReader {
 
     private static final String TAG = WavFileReader.class.getSimpleName();
 
     private DataInputStream mDataInputStream;
     private WavFileHeader mWavFileHeader;
+
 
     public boolean openFile(String filepath) throws IOException {
         if (mDataInputStream != null) {
@@ -40,7 +36,7 @@ public class WavFileReader{
         return readHeader();
     }
 
-    public boolean openFile(InputStream Inputstream) throws IOException {
+    public boolean setDataInputStream(InputStream Inputstream) throws IOException {
         if (mDataInputStream != null) {
             closeFile();
         }
@@ -63,7 +59,6 @@ public class WavFileReader{
         if (mDataInputStream == null || mWavFileHeader == null) {
             return -1;
         }
-
         try {
             int nbytes = mDataInputStream.read(buffer, offset, count);
             if (nbytes == -1) {
@@ -89,54 +84,53 @@ public class WavFileReader{
 
         try {
             header.mChunkID = "" + (char) mDataInputStream.readByte() + (char) mDataInputStream.readByte() + (char) mDataInputStream.readByte() + (char) mDataInputStream.readByte();
-            Log.d(TAG, "Read file chunkID:" + header.mChunkID);
-
+//            Log.d(TAG, "Read file chunkID:" + header.mChunkID);
             mDataInputStream.read(intValue);
             header.mChunkSize = byteArrayToInt(intValue);
-            Log.d(TAG, "Read file chunkSize:" + header.mChunkSize);
+//            Log.d(TAG, "Read file chunkSize:" + header.mChunkSize);
 
             header.mFormat = "" + (char) mDataInputStream.readByte() + (char) mDataInputStream.readByte() + (char) mDataInputStream.readByte() + (char) mDataInputStream.readByte();
-            Log.d(TAG, "Read file format:" + header.mFormat);
+//            Log.d(TAG, "Read file format:" + header.mFormat);
 
             header.mSubChunk1ID = "" + (char) mDataInputStream.readByte() + (char) mDataInputStream.readByte() + (char) mDataInputStream.readByte() + (char) mDataInputStream.readByte();
-            Log.d(TAG, "Read fmt chunkID:" + header.mSubChunk1ID);
+//            Log.d(TAG, "Read fmt chunkID:" + header.mSubChunk1ID);
 
-            mDataInputStream.read();
+            mDataInputStream.read(intValue);
             header.mSubChunk1Size = byteArrayToInt(intValue);
-            Log.d(TAG, "Read fmt chunkSize:" + header.mSubChunk1Size);
+//            Log.d(TAG, "Read fmt chunkSize:" + header.mSubChunk1Size);
 
             mDataInputStream.read(shortValue);
             header.mAudioFormat = byteArrayToShort(shortValue);
-            Log.d(TAG, "Read audioFormat:" + header.mAudioFormat);
+//            Log.d(TAG, "Read audioFormat:" + header.mAudioFormat);
 
             mDataInputStream.read(shortValue);
             header.mNumChannel = byteArrayToShort(shortValue);
-            Log.d(TAG, "Read channel number:" + header.mNumChannel);
+//            Log.d(TAG, "Read channel number:" + header.mNumChannel);
 
             mDataInputStream.read(intValue);
             header.mSampleRate = byteArrayToInt(intValue);
-            Log.d(TAG, "Read samplerate:" + header.mSampleRate);
+//            Log.d(TAG, "Read samplerate:" + header.mSampleRate);
 
             mDataInputStream.read(intValue);
             header.mByteRate = byteArrayToInt(intValue);
-            Log.d(TAG, "Read byterate:" + header.mByteRate);
+//            Log.d(TAG, "Read byterate:" + header.mByteRate);
 
             mDataInputStream.read(shortValue);
             header.mBlockAlign = byteArrayToShort(shortValue);
-            Log.d(TAG, "Read blockalign:" + header.mBlockAlign);
+//            Log.d(TAG, "Read blockalign:" + header.mBlockAlign);
 
             mDataInputStream.read(shortValue);
             header.mBitsPerSample = byteArrayToShort(shortValue);
-            Log.d(TAG, "Read bitspersample:" + header.mBitsPerSample);
+//            Log.d(TAG, "Read bitspersample:" + header.mBitsPerSample);
 
             header.mSubChunk2ID = "" + (char) mDataInputStream.readByte() + (char) mDataInputStream.readByte() + (char) mDataInputStream.readByte() + (char) mDataInputStream.readByte();
-            Log.d(TAG, "Read data chunkID:" + header.mSubChunk2ID);
+//            Log.d(TAG, "Read data chunkID:" + header.mSubChunk2ID);
 
             mDataInputStream.read(intValue);
             header.mSubChunk2Size = byteArrayToInt(intValue);
-            Log.d(TAG, "Read data chunkSize:" + header.mSubChunk2Size);
+//            Log.d(TAG, "Read data chunkSize:" + header.mSubChunk2Size);
 
-            Log.d(TAG, "Read wav file success !");
+//            Log.d(TAG, "Read wav file success !");
         } catch (Exception e) {
             e.printStackTrace();
             return false;
@@ -154,4 +148,8 @@ public class WavFileReader{
     private static int byteArrayToInt(byte[] b) {
         return ByteBuffer.wrap(b).order(ByteOrder.LITTLE_ENDIAN).getInt();
     }
+
+    public DataInputStream getDataInputStream(){return mDataInputStream;}
+    public WavFileHeader getHeader(){return  mWavFileHeader;}
+
 }

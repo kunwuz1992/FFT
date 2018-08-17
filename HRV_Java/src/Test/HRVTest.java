@@ -5,19 +5,24 @@ import alg.FFTCal;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
+import alg.Filtfilt;
+import alg.PACER;
+import alg.PacerGenerator;
 import alg.iirj.Butterworth;
 
-public class FftTest {
+public class HRVTest {
 
     private static String FFT_TEST_FILE_PATH = "TestData/test1_hrv_data.csv";
     private static String FILTER_TEST_FILE_PATH = "TestData/wave1.dat";
 
     public static void main(String[] args) throws IOException {
 //        FFTTest();
-        filtertest();
+//        filtertest();
+        filtfilttest();
     }
 
     public static void FFTTest() throws IOException {
@@ -114,5 +119,53 @@ public class FftTest {
             System.out.println("Output: " + out);
         }
     }
+
+    public static void pacertest() {
+        int br = 7;
+
+        List<PACER> ps = new ArrayList<PACER>();
+        for(int i =6; i < 15; i++){
+            br = i;
+            PacerGenerator pg = new PacerGenerator(br,ps);
+            pg.stepgeneration();
+            System.out.println(pg.PacerVal);}
+    }
+
+    public static void filtfilttest() throws IOException{
+        /**
+         *
+         * @param _B
+         *          filter numerator
+         * @param _A
+         *          filter denominator
+         * @param X
+         *          the input: signal to be filtered
+         * @output
+         * 			the output: filtered sequence
+         */
+
+        //initialize the filter
+        Double[] _A = {1.0000,-1.1876,1.3052,-0.6743, 0.2635,-0.0518, 0.0050};
+        Double[] _B = {0.0701,-0.4207,1.0517,-1.4023, 1.0517,-0.4207, 0.0701};
+        ArrayList<Double> A = new ArrayList<>();
+        ArrayList<Double> B = new ArrayList<>();
+        A.addAll(Arrays.asList(_A));
+        B.addAll(Arrays.asList(_B));
+        Filtfilt mFiltfilt = new Filtfilt(B,A);
+
+        // Read the file data
+        ArrayList<Double> InputData = new ArrayList<>();
+        Scanner scanner = new Scanner(new File(FILTER_TEST_FILE_PATH));
+        while (scanner.hasNext()) {
+            InputData.add(Double.parseDouble(scanner.next()));
+        }
+        scanner.close();
+
+        //Test
+        mFiltfilt.doFiltfilt(InputData);
+        ArrayList<Double> Output = mFiltfilt.getFilterdSignal();
+        for(double x:Output) System.out.println(x);
+    }
+
 
 }
