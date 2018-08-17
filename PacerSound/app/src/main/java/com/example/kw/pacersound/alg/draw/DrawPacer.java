@@ -45,6 +45,10 @@ public class DrawPacer extends View implements Runnable {
     private boolean inHalse = false;
     private boolean isHold = false;
     private Handler mHandler;
+    private int PACER_STATE;
+    private final int PACER_IN = 1;
+    private final int PACER_HOLD = 2;
+    private final int PACER_EX = 3;
 
     public DrawPacer(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -132,20 +136,29 @@ public class DrawPacer extends View implements Runnable {
                 if (pacerValue > 100) {
                     pacerValue = 100;
                 }
+                if(pacer.getPercentage() ==0)
+                    PACER_STATE = PACER_HOLD;
+                else
+                    PACER_STATE = PACER_IN;
             } else {
                 pacerValue = pacerAheadValue - pacer.getPercentage() * pacer.getMmSecUsed() / pacerRefreshTime;
                 if (pacerValue < 0) {
                     pacerValue = 0;
                 }
-            }
-            if(pacer.getPercentage() == 0)
-                isHold = true;
-            else
-                isHold = false;
+                if(pacer.getPercentage() ==0)
+                {
+                    PACER_STATE = PACER_HOLD;
+                    isHold = true;
+                } else{
+                    PACER_STATE = PACER_EX;
+                    isHold = false;
+                }
 
+            }
             Bundle mBundle = new Bundle();
-            mBundle.putBoolean("inHalse",inHalse);
             mBundle.putBoolean("PacerHold",isHold);
+            mBundle.putBoolean("inHalse",inHalse);
+            mBundle.putInt("PacerState",PACER_STATE);
             mBundle.putInt("PacerValue",pacerValue);
             Message msg = new Message();
             msg.setData(mBundle);
@@ -208,6 +221,7 @@ public class DrawPacer extends View implements Runnable {
         this.pause = false;
         this.notify();
     }
+
     public void setHandler(Handler _Handler){
         this.mHandler = _Handler;
     }

@@ -15,10 +15,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.kw.pacersound.alg.PacerGenerator;
-import com.example.kw.pacersound.alg.PlayThread;
+import com.example.kw.pacersound.alg.PlayAudio;
 import com.example.kw.pacersound.alg.draw.DrawPacer;
 import com.example.kw.pacersound.alg.wav.AudioPlayer;
 import com.example.kw.pacersound.recvdata.PacerPattern;
+
 
 
 public class MainActivity extends AppCompatActivity {
@@ -28,10 +29,10 @@ public class MainActivity extends AppCompatActivity {
     //Pacer
     private PacerPattern pacerPattern;
     private Thread drawPacerThread;
-    private PlayThread playThread;
+    private Thread  playThread;
     private DrawPacer drawPacerRect;
+    private PlayAudio playAudio;
     private AudioPlayer mAudioPlayer;
-    private Handler playHandler;
 
     private int rs = 6;
 
@@ -60,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
         drawPacerRect = (DrawPacer) findViewById(R.id.realpaly_draw_pacer);
         // initialize audio player
         PlayerInit();
-        drawPacerRect.setHandler(playHandler);
+        playAudio = new PlayAudio(mAudioPlayer);
     }
 
     private OnClickListener ctrlListener = new View.OnClickListener() {
@@ -77,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
                 } else{
                     btnOpenPacer.setText(getResources().getString(R.string.app_main_pacer_on));
                     btnOpenPacerSound.setText(getResources().getString(R.string.app_main_pacer_sound_on));
-                    playThread.Pause();
+                    if(playAudio != null) playAudio.Pause();
                 }
             } else if (v.getId() == R.id.btnOpenPacerSound) {
                 Button btnOpenPacerSound = (Button) findViewById(R.id.btnOpenPacerSound);
@@ -103,7 +104,7 @@ public class MainActivity extends AppCompatActivity {
                 if(pacerPattern !=null) {
                     pacerPattern.Patternclear();
                     drawPacerRect.drawClear();
-                    playThread.Pause();
+                    if(playAudio != null) playAudio.Pause();
                     Button btnOpenPacer = (Button) findViewById(R.id.btnOpenPacer);
                     btnOpenPacer.setText(getResources().getString(R.string.app_main_pacer_on));
                     Button btnOpenPacerSound = (Button) findViewById(R.id.btnOpenPacerSound);
@@ -112,9 +113,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     };
-
-    /*--------------------------Pacer--------------------------------------------------------------------*/
-
 
     /*--------------------------Pacer--------------------------------------------------------------------*/
     private void OpenDrawingPacer(boolean pacerOn)
@@ -128,8 +126,10 @@ public class MainActivity extends AppCompatActivity {
                 pacerPattern= new PacerPattern();
             pacerPattern.PACEPATTERNUSED = 0;
             pacerPattern.AddPacers(0, pg.getPacerlist());
-            playThread.setInWav(pg.getInHaust());
-            playThread.setExWav(pg.getExHaust());
+            if(playAudio != null){
+                playAudio.setInWav(pg.getInHaust());
+                playAudio.setExWav(pg.getExHaust());
+            }
         }else {
             if(pacerPattern!=null) pacerPattern.PACEPATTERNUSED = -1;
         }
@@ -145,9 +145,14 @@ public class MainActivity extends AppCompatActivity {
             return false;
         } else{
             if(soundOn) {
-                pacerPattern.PACERSOUNDUSED = 0;
+                if(playThread == null){
+                    playThread = new Thread(playAudio);
+                    playThread.start();
+                    drawPacerRect.setHandler(new Handler(playAudio.getmLooper()));
+                }
+                if(playAudio.isPause()) playAudio.Continue();
             }else {
-                pacerPattern.PACERSOUNDUSED = -1;
+                playAudio.Pause();
             }
             return true;
         }
@@ -157,21 +162,6 @@ public class MainActivity extends AppCompatActivity {
         if(mAudioPlayer == null)
             mAudioPlayer = new AudioPlayer();
         mAudioPlayer.startPlayer();
-
-        playThread = new PlayThread(mAudioPlayer);
-        playThread.start();
-
-        playHandler = new Handler(playThread.getmLooper()){
-            @Override
-            public void handleMessage(Message msg) {
-                int state = msg.getData().getInt("PacerState");
-                int value = msg.getData().getInt("PacerValue");
-                if(pacerPattern.PACERSOUNDUSED >= 0){
-                    playThread.updatePlayer(state,value);
-                    playThread.playBuffer();
-                }
-            }
-        };
     }
 
 }

@@ -28,7 +28,7 @@ public class PacerGenerator {
     private List<byte[]> exHaust = new ArrayList<>();
     private final int ORIGIN_SOUND_LENGTH = 4;// The length of the source file
     private float rate = 1.0f;
-    private int quality = 0;
+    private int quality = 1;
     private int BufferSize;
 
     /*Input : BreathingRate - the breathing list
