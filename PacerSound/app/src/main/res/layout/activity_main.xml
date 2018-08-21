@@ -82,6 +82,34 @@
 
     </LinearLayout>
 
+    <LinearLayout
+        android:id="@+id/linelay_bottom"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="5dp"
+        android:gravity="center_horizontal|bottom"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btnGen"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="生成"
+            android:layout_marginRight="10dp"/>
+
+        <Button
+            android:id="@+id/btnTest"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="测试" />
+        <Button
+            android:id="@+id/btnStop"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="停止" />
+
+    </LinearLayout>
+
 
     <com.example.kw.pacersound.alg.draw.DrawPacer
         android:id="@+id/realpaly_draw_pacer"

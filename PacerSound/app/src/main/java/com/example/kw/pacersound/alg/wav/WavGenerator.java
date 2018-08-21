@@ -35,8 +35,8 @@ public class WavGenerator {
 
 //    private int sampleRate;
 //    private int numChannels;
-    private final int sampleRate = 16000;
-    private final int numChannels = 1;
+    private final int sampleRate = 44100;
+    private final int numChannels = 2;
     private Sonic mSonic;
     private InputStream SourceStream;
     private List<byte[]> OutByteList;

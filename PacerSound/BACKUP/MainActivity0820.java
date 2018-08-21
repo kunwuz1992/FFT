@@ -62,7 +62,6 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.textCurrentBpm).setOnClickListener((ctrlListener));
         findViewById(R.id.btnGen).setOnClickListener((ctrlListener));
         findViewById(R.id.btnTest).setOnClickListener((ctrlListener));
-        findViewById(R.id.btnStop).setOnClickListener((ctrlListener));
         drawPacerRect = (DrawPacer) findViewById(R.id.realpaly_draw_pacer);
         // initialize audio player
         PlayerInit();
@@ -120,15 +119,9 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(v.getContext(), "已生成，可以开始测试", Toast.LENGTH_SHORT).show();
             } else if (v.getId() == R.id.btnTest){
                 playTest();
-                isStop = false;
-                Toast.makeText(v.getContext(), "播放开始", Toast.LENGTH_SHORT).show();
-            } else if (v.getId() == R.id.btnStop){
-                isStop = true;
-                mAudioPlayer.stopPlayer();
                 Toast.makeText(v.getContext(), "播放结束", Toast.LENGTH_SHORT).show();
             }
         }
-
     };
 
     /*--------------------------Pacer--------------------------------------------------------------------*/
@@ -153,7 +146,6 @@ public class MainActivity extends AppCompatActivity {
         }
         drawPacerThread = new Thread(drawPacerRect, "DrawPacerThread");
         drawPacerThread.start();
-//        playThread.start();
     }
 
     /*--------------------------Pacer--------------------------------------------------------------------*/
@@ -165,7 +157,6 @@ public class MainActivity extends AppCompatActivity {
         } else{
             if(soundOn) {
                 pacerPattern.PACERSOUNDUSED = 0;
-                mAudioPlayer.startPlayer();
             }else {
                 pacerPattern.PACERSOUNDUSED = -1;
             }
@@ -177,18 +168,15 @@ public class MainActivity extends AppCompatActivity {
         if(mAudioPlayer == null)
             mAudioPlayer = new AudioPlayer();
         mAudioPlayer.startPlayer();
+
         playThread = new PlayThread(mAudioPlayer);
         playThread.start();
-         playHandler = new Handler(playThread.getmLooper()){
-//        playHandler = new Handler(){
+
+        playHandler = new Handler(playThread.getmLooper()){
             @Override
             public void handleMessage(Message msg) {
                 int state = msg.getData().getInt("PacerState");
                 int value = msg.getData().getInt("PacerValue");
-//                int Svalue= msg.getData().getInt("SoundIndex");
-//                playThread.updatePlayer(state,value);
-//                playThread.setPause(Svalue>value);
-
                 if(pacerPattern.PACERSOUNDUSED >= 0){
                     playThread.updatePlayer(state,value);
                     playThread.playBuffer();
@@ -198,11 +186,9 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         };
-        playThread.setmHandler(playHandler);
     }
-    /*---------------------------------------------------------------------------*/
+
     private List<byte[]> testWav;
-    private boolean isStop = false;
 
     private void testPlayer(){
         int buffersize = mAudioPlayer.getBufferSize();
@@ -213,20 +199,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void playTest(){
-
         mAudioPlayer.startPlayer();
-//        int i = 0;
-//        while(i < testWav.size()){
-//            if(!isStop){
-//                byte[] buffer = testWav.get(i);
-//                mAudioPlayer.play(buffer,0,buffer.length);
-//                i++;
-//                if(i == testWav.size()) i = 0;
-//            }
-//        }
         for(byte[] buffer:testWav)
             mAudioPlayer.play(buffer,0,buffer.length);
         mAudioPlayer.stopPlayer();
-
     }
 }

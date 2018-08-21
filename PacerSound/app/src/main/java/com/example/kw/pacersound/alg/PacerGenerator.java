@@ -7,6 +7,7 @@ import com.example.kw.pacersound.alg.wav.WavGenerator;
 import com.example.kw.pacersound.recvdata.PACER;
 
 import java.io.InputStream;
+import java.nio.Buffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -26,7 +27,7 @@ public class PacerGenerator {
     private byte[] ExhaustArray;
     private List<byte[]> inHaust = new ArrayList<>();
     private List<byte[]> exHaust = new ArrayList<>();
-    private final int ORIGIN_SOUND_LENGTH = 4;// The length of the source file
+    private final int ORIGIN_SOUND_LENGTH = 3;// The length of the source file
     private float rate = 1.0f;
     private int quality = 1;
     private int BufferSize;
@@ -39,8 +40,8 @@ public class PacerGenerator {
         setBreathingRate(BreathingRate);
         this.BufferSize = size;
         try{
-            InputStream InhausStream = context.getResources().openRawResource(R.raw.test);
-            InputStream ExhausStream = context.getResources().openRawResource(R.raw.test);
+            InputStream InhausStream = context.getResources().openRawResource(R.raw.inhaust);
+            InputStream ExhausStream = context.getResources().openRawResource(R.raw.exhaust);
             InhaustGenerator = new WavGenerator(InhausStream);
             ExhaustGenerator = new WavGenerator(ExhausStream);
         } catch (Exception e)

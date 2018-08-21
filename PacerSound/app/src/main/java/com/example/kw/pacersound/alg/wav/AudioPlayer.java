@@ -23,15 +23,14 @@ public class AudioPlayer {
     private static final String TAG = "AudioPlayer";
 
     private static final int DEFAULT_STREAM_TYPE = AudioManager.STREAM_MUSIC;
-    private static final int DEFAULT_SAMPLE_RATE = 16000;
-    private static final int DEFAULT_CHANNEL_CONFIG = AudioFormat.CHANNEL_OUT_MONO;
+    private static final int DEFAULT_SAMPLE_RATE = 44100;
+    private static final int DEFAULT_CHANNEL_CONFIG = AudioFormat.CHANNEL_OUT_STEREO;
     private static final int DEFAULT_AUDIO_FORMAT = AudioFormat.ENCODING_PCM_16BIT;
     private static final int DEFAULT_PLAY_MODE = AudioTrack.MODE_STREAM;
 
     private volatile boolean mIsPlayStarted = false;
     private AudioTrack mAudioTrack;
     private int bufferSize;
-
 
     public boolean startPlayer() {
         return startPlayer(DEFAULT_STREAM_TYPE, DEFAULT_SAMPLE_RATE, DEFAULT_CHANNEL_CONFIG, DEFAULT_AUDIO_FORMAT);
@@ -43,7 +42,7 @@ public class AudioPlayer {
             return false;
         }
 
-        int bufferSizeInBytes = AudioTrack.getMinBufferSize(sampleRateInHz, channelConfig, audioFormat);
+        int bufferSizeInBytes = 2*AudioTrack.getMinBufferSize(sampleRateInHz, channelConfig, audioFormat);
         if (bufferSizeInBytes == AudioTrack.ERROR_BAD_VALUE) {
             Log.e(TAG, "Invalid parameter !");
             return false;
@@ -97,12 +96,13 @@ public class AudioPlayer {
         }
         int WriteBytes;
 
+        mAudioTrack.play();
         WriteBytes = mAudioTrack.write(audioData, offsetInBytes, sizeInBytes);
         if ( WriteBytes!= sizeInBytes) {
             Log.e(TAG, "Could not write all the samples to the audio device !");
         }
 
-        mAudioTrack.play();
+
 
         Log.d(TAG, "OK, Played " + sizeInBytes + " bytes !");
 

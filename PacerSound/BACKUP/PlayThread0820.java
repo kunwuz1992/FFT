@@ -1,6 +1,5 @@
 package com.example.kw.pacersound.alg;
 
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
@@ -109,15 +108,6 @@ public class PlayThread extends Thread {
         Looper.loop();
     }
 
-//    @Override
-//    public void run() {
-//        synchronized (this) {
-//            while(!stop){
-//                playT();
-//            }
-//        }
-//    }
-
     public void setInWav(List<byte[]> _in){
         InWav = _in;
     }
@@ -132,14 +122,6 @@ public class PlayThread extends Thread {
 
     public void Pause() {
         this.pause = true;
-    }
-
-    public void setPause(boolean _pause) {
-        this.pause = _pause;
-        if(_pause)
-            this.PLATER_STATE = PLAYSTATE_PAUSED;
-        else
-            this.PLATER_STATE = PLAYSTATE_PLAYING;
     }
 
     public boolean isPause() {
@@ -172,33 +154,4 @@ public class PlayThread extends Thread {
         SoundIndex = end;
     }
 
-    public void setmHandler(Handler _handler){
-        this.mHandler = _handler;
-    }
-
-
-//    public void playT(){
-//        mAudioPlayer.startPlayer();
-//        while (!stop){
-//            if(!pause)
-//            {
-//                if(pacerState == 1){
-//                    byte[] buffer = InWav.get(SoundIndex);
-//                    mAudioPlayer.play(buffer,0,buffer.length);
-//                    SoundIndex++;
-//                } else if (pacerState == 3){
-//                    byte[] buffer = ExWav.get(SoundIndex);
-//                    mAudioPlayer.play(buffer,0,buffer.length);
-//                    SoundIndex++;
-//                }
-//                Bundle mBundle = new Bundle();
-//                int progress = SoundIndex/InWav.size();
-//                mBundle.putInt("SoundIndex",progress);
-//                Message msg = new Message();
-//                msg.setData(mBundle);
-//                mHandler.sendMessage(msg);
-//                if (SoundIndex ==InWav.size()) SoundIndex = 0;
-//            }
-//        }
-//    }
 }
