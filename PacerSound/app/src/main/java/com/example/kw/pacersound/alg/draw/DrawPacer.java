@@ -7,7 +7,6 @@ import android.graphics.Paint;
 import android.graphics.RectF;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Looper;
 import android.os.Message;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
@@ -15,7 +14,6 @@ import android.view.View;
 import android.view.WindowManager;
 
 import com.example.kw.pacersound.R;
-import com.example.kw.pacersound.alg.wav.AudioPlayer;
 import com.example.kw.pacersound.recvdata.PACER;
 import com.example.kw.pacersound.recvdata.PacerPattern;
 

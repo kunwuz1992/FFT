@@ -29,12 +29,8 @@ public class AudioPlayer {
     private static final int DEFAULT_PLAY_MODE = AudioTrack.MODE_STREAM;
 
     private volatile boolean mIsPlayStarted = false;
-    private int offset = 0;
     private AudioTrack mAudioTrack;
     private int bufferSize;
-    private byte[] inHaust;
-    private byte[] exHaust;
-
 
     public boolean startPlayer() {
         return startPlayer(DEFAULT_STREAM_TYPE, DEFAULT_SAMPLE_RATE, DEFAULT_CHANNEL_CONFIG, DEFAULT_AUDIO_FORMAT);
@@ -93,10 +89,10 @@ public class AudioPlayer {
     }
 
 
-    public void play(byte[] audioData, int offsetInBytes, int sizeInBytes) {
+    public int play(byte[] audioData, int offsetInBytes, int sizeInBytes) {
         if (!mIsPlayStarted) {
             Log.e(TAG, "Player not started !");
-
+            return 0;
         }
         int WriteBytes;
 
@@ -106,42 +102,14 @@ public class AudioPlayer {
             Log.e(TAG, "Could not write all the samples to the audio device !");
         }
 
+
+
         Log.d(TAG, "OK, Played " + sizeInBytes + " bytes !");
 
+        return WriteBytes;
     }
 
     public int getBufferSize(){
         return bufferSize;
     }
-
-    public int getPlayerState(){
-        return mAudioTrack.getState();
-    }
-
-    public void playInHaust(){
-        if (!mIsPlayStarted) {
-            Log.e(TAG, "Player not started !");
-        }
-        mAudioTrack.play();
-        int WriteBytes = mAudioTrack.write(inHaust, offset, inHaust.length-offset);
-        if ( WriteBytes!= (inHaust.length-offset)) {
-            Log.e(TAG, "Could not write all the samples to the audio device !");
-        }
-    }
-
-    public void playExHaust(){
-        if (!mIsPlayStarted) {
-            Log.e(TAG, "Player not started !");
-        }
-        int WriteBytes = mAudioTrack.write(exHaust, offset, exHaust.length-offset);
-        if ( WriteBytes!= (exHaust.length-offset)) {
-            Log.e(TAG, "Could not write all the samples to the audio device !");
-        }
-    }
-
-    public void setWavData(byte[] _in, byte[] _ex) {
-        this.inHaust = _in;
-        this.exHaust = _ex;
-    }
-
 }

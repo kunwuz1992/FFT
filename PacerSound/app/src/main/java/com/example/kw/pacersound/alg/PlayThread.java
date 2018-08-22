@@ -1,34 +1,29 @@
 package com.example.kw.pacersound.alg;
 
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.HandlerThread;
 import android.os.Looper;
-import android.os.Message;
 
 import com.example.kw.pacersound.alg.wav.AudioPlayer;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class PlayThread extends Thread {
 
     private AudioPlayer mAudioPlayer;
     protected boolean stop = false;
-    protected boolean pause = false;
+    protected boolean pause = true;
 
     private final int PLAYSTATE_PAUSED = 2;
     private final int PLAYSTATE_PLAYING = 3;
     private final int PLAYSTATE_STOPPED = 1;
     private int PLATER_STATE;
-    private int SoundIndex;
-    private List<byte[]> InWav;
-    private List<byte[]> ExWav;
+    private List<byte[]> InWav = new ArrayList<>();
+    private List<byte[]> ExWav = new ArrayList<>();
 
     private int pacerState;
     private int pacerValue;
 
-    private Looper mLooper;
-    private Handler mHandler;
+
 
     public PlayThread(AudioPlayer _player){
         this.mAudioPlayer = _player;
@@ -59,71 +54,46 @@ public class PlayThread extends Thread {
         PLATER_STATE = PLAYSTATE_PLAYING;
     }
 
-    private int getEndPoint(int value, int state){
-        int end = 0;
-        if(state == 1){
-            if(InWav.size()*value%100 == 0)
-                end = InWav.size()*value/100;
-            else
-                end = Math.min(1+InWav.size()*value/100,InWav.size());
-        } else if(state == 3){
-            if(ExWav.size()*value%100 == 0)
-                end = ExWav.size()*value/100;
-            else
-                end = Math.max(-1+ExWav.size()*value/100,0);
-        }
-        return end;
-    }
-
-    public void playBuffer(){
-        int end;
-        if(pacerState == 1){
-            end =  getEndPoint(pacerValue,pacerState);
-            if(SoundIndex != end){
-                for(int i = SoundIndex; i < end; i++){
-                    byte[] buffer = InWav.get(i);
-                    PlayerPlay(buffer);
-                }
-            }
-            SoundIndex = end;
-        } else if(pacerState == 3) {
-            end =  getEndPoint(pacerValue,pacerState);
-            if(SoundIndex != end){
-                for(int i = SoundIndex; i > end; i--){
-                    byte[] buffer = ExWav.get(ExWav.size()-i);
-                    PlayerPlay(buffer);
-                }
-            }
-            SoundIndex = end;
-        } else{
-//                PlayerPause();
-        }
-    }
-
     @Override
     public void run() {
-        Looper.prepare();
         synchronized (this) {
-            mLooper = Looper.myLooper();
+            mAudioPlayer.startPlayer();
+            int itr = 0;
+            while (!stop){
+                if(!pause){
+                    switch (pacerState){
+                        case 1:
+                            if(itr<InWav.size()){
+                                byte[] buffer = InWav.get(itr);
+                                PlayerPlay(buffer);
+                                itr ++;
+                            }
+                            break;
+                        case 2:
+                            itr = 0;
+                            break;
+                        case 3:
+                            if(itr<ExWav.size()){
+                                byte[] buffer = ExWav.get(itr);
+                                PlayerPlay(buffer);
+                                itr ++;
+                            }
+                            break;
+                        default:
+                            itr = 0;
+                    }
+                }
+            }
         }
-        Looper.loop();
     }
 
-//    @Override
-//    public void run() {
-//        synchronized (this) {
-//            while(!stop){
-//                playT();
-//            }
-//        }
-//    }
-
-    public void setInWav(List<byte[]> _in){
-        InWav = _in;
-    }
-
-    public void setExWav(List<byte[]> _ex){
-        ExWav = _ex;
+    public void setWav(List<byte[]> _in, List<byte[]> _ex){
+        if(InWav !=null){
+            this.ExWav.clear();
+            this.InWav.clear();
+        }
+        this.ExWav.addAll(_ex);
+        this.InWav.addAll(_in);
     }
 
     public void Stop() {
@@ -132,6 +102,7 @@ public class PlayThread extends Thread {
 
     public void Pause() {
         this.pause = true;
+        PlayerPause();
     }
 
     public void setPause(boolean _pause) {
@@ -150,55 +121,13 @@ public class PlayThread extends Thread {
         return this.stop;
     }
 
-    public synchronized void Continue() {
+    public void Continue() {
         this.pause = false;
-        this.notify();
     }
 
     public void updatePlayer(int _state, int _value){
         pacerState = _state;
         pacerValue = _value;
     }
-    public void setPlayerState(int _state){
-        PLATER_STATE = _state;
-    }
 
-    public Looper getmLooper(){
-        return mLooper;
-    }
-
-    public void setSoundIndex(int value, int state){
-        int end =  getEndPoint(value,state);
-        SoundIndex = end;
-    }
-
-    public void setmHandler(Handler _handler){
-        this.mHandler = _handler;
-    }
-
-
-//    public void playT(){
-//        mAudioPlayer.startPlayer();
-//        while (!stop){
-//            if(!pause)
-//            {
-//                if(pacerState == 1){
-//                    byte[] buffer = InWav.get(SoundIndex);
-//                    mAudioPlayer.play(buffer,0,buffer.length);
-//                    SoundIndex++;
-//                } else if (pacerState == 3){
-//                    byte[] buffer = ExWav.get(SoundIndex);
-//                    mAudioPlayer.play(buffer,0,buffer.length);
-//                    SoundIndex++;
-//                }
-//                Bundle mBundle = new Bundle();
-//                int progress = SoundIndex/InWav.size();
-//                mBundle.putInt("SoundIndex",progress);
-//                Message msg = new Message();
-//                msg.setData(mBundle);
-//                mHandler.sendMessage(msg);
-//                if (SoundIndex ==InWav.size()) SoundIndex = 0;
-//            }
-//        }
-//    }
 }

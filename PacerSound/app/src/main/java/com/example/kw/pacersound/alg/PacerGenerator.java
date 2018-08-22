@@ -133,8 +133,10 @@ public class PacerGenerator {
 
     /*--------------Pace sound--------------------------------------------*/
     private boolean SoundGeneration(){
-        float InSpeed = (float)ORIGIN_SOUND_LENGTH*1000/BreathTime;
-        float OutSpeed = (float)ORIGIN_SOUND_LENGTH*1000/BreathTime;
+//        float InSpeed = (float)ORIGIN_SOUND_LENGTH*1000/BreathTime;
+//        float OutSpeed = (float)ORIGIN_SOUND_LENGTH*1000/BreathTime;
+        float InSpeed = (float)ORIGIN_SOUND_LENGTH*BreathingRate/30;
+        float OutSpeed = (float)ORIGIN_SOUND_LENGTH*BreathingRate/30;
 
         InhaustGenerator.setSonic(InSpeed, rate,quality);
         ExhaustGenerator.setSonic(OutSpeed, rate,quality);
@@ -174,5 +176,12 @@ public class PacerGenerator {
 
     public List<byte[]> getInHaust() {
         return inHaust;
+    }
+
+    public byte[] getInArray() {
+        return InhaustArray;
+    }
+    public byte[] getExArray() {
+        return ExhaustArray;
     }
 }

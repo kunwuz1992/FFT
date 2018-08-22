@@ -35,8 +35,6 @@ public class MainActivity extends AppCompatActivity {
     private DrawPacer drawPacerRect;
     private AudioPlayer mAudioPlayer;
     private Handler playHandler;
-    private List<byte[]> inWav = new ArrayList<>();
-    private List<byte[]> exWav = new ArrayList<>();
 
     private int rs = 6;
 
@@ -71,7 +69,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private OnClickListener ctrlListener = new OnClickListener() {
+    private OnClickListener ctrlListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             if (v.getId() == R.id.btnOpenPacer) {
@@ -85,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
                 } else{
                     btnOpenPacer.setText(getResources().getString(R.string.app_main_pacer_on));
                     btnOpenPacerSound.setText(getResources().getString(R.string.app_main_pacer_sound_on));
-                    playThread.Pause();
+//                    playThread.Pause();
                 }
             } else if (v.getId() == R.id.btnOpenPacerSound) {
                 Button btnOpenPacerSound = (Button) findViewById(R.id.btnOpenPacerSound);
@@ -94,11 +92,9 @@ public class MainActivity extends AppCompatActivity {
                 if(PacerExist) {
                     if (toOpen){
                         btnOpenPacerSound.setText(getResources().getString(R.string.app_main_pacer_sound_off));
-                        playThread.Continue();
                     }
                     else{
                         btnOpenPacerSound.setText(getResources().getString(R.string.app_main_pacer_sound_on));
-                        playThread.Pause();
                     }
                 }
             } else if (v.getId() == R.id.btnSetRS){
@@ -126,11 +122,13 @@ public class MainActivity extends AppCompatActivity {
 //                playTest();
                 isStop = false;
                 Toast.makeText(v.getContext(), "播放开始", Toast.LENGTH_SHORT).show();
-                playTest();
+//                playThread.Continue();
+
             } else if (v.getId() == R.id.btnStop){
                 isStop = true;
-                playThread.Stop();
+                mAudioPlayer.stopPlayer();
                 Toast.makeText(v.getContext(), "播放结束", Toast.LENGTH_SHORT).show();
+//                playThread.Pause();
             }
         }
     };
@@ -151,17 +149,14 @@ public class MainActivity extends AppCompatActivity {
             pacerPattern.PACEPATTERNUSED = 0;
             pacerPattern.AddPacers(0, pg.getPacerlist());
             mAudioPlayer.setWavData(pg.getInArray(), pg.getExArray());
-            if(inWav != null){
-                inWav.clear();
-                exWav.clear();
-            }
-            inWav.addAll(pg.getInHaust());
-            exWav.addAll(pg.getExHaust());
+            playThread.setInWav(pg.getInHaust());
+            playThread.setExWav(pg.getExHaust());
         }else {
             if(pacerPattern!=null) pacerPattern.PACEPATTERNUSED = -1;
         }
         drawPacerThread = new Thread(drawPacerRect, "DrawPacerThread");
         drawPacerThread.start();
+//        playThread.start();
     }
 
     /*--------------------------Pacer--------------------------------------------------------------------*/
@@ -177,7 +172,6 @@ public class MainActivity extends AppCompatActivity {
             }else {
                 pacerPattern.PACERSOUNDUSED = -1;
             }
-            playThread.setWav(inWav,exWav);
             return true;
         }
     }
@@ -188,16 +182,48 @@ public class MainActivity extends AppCompatActivity {
         mAudioPlayer.startPlayer();
         playThread = new PlayThread(mAudioPlayer);
         playThread.start();
-        playHandler = new Handler(){
-            @Override
-            public void handleMessage(Message msg) {
-                int state = msg.getData().getInt("PacerState");
-                int value = msg.getData().getInt("PacerValue");
-                playThread.updatePlayer(state, value);
-            }
+        playHandler = new Handler(playThread.getmLooper());
+        drawPacerRect.setHandler(playThread.getmHandler());
 
-        };
-        drawPacerRect.setHandler(playHandler);
+//        playHandler = new Handler(){
+//            @Override
+//            public void handleMessage(Message msg) {
+//                int state = msg.getData().getInt("PacerState");
+//                if (state == 1){
+//                    if(mAudioPlayer.getPlayerState()==1)
+//                        mAudioPlayer.playInHaust();
+//                } else if(state == 3){
+//                    if(mAudioPlayer.getPlayerState()==1)
+//                        mAudioPlayer.playExHaust();
+//                } else
+//                    mAudioPlayer.stopPlayer();
+//            }
+//        };
+//        drawPacerRect.setHandler(playHandler);
+
+//        playThread = new PlayThread(mAudioPlayer);
+//        playThread.start();
+//         playHandler = new Handler(playThread.getmLooper()){
+//        playHandler = new Handler(){
+//            @Override
+//            public void handleMessage(Message msg) {
+//                int state = msg.getData().getInt("PacerState");
+//                int value = msg.getData().getInt("PacerValue");
+//                playThread.updatePlayer(state,value);
+//                int Svalue= msg.getData().getInt("SoundIndex");
+//                playThread.updatePlayer(state,value);
+//                playThread.setPause(Svalue>value);
+
+//                if(pacerPattern.PACERSOUNDUSED >= 0){
+//                    playThread.updatePlayer(state,value);
+//                    playThread.playBuffer();
+//                } else {
+//                    if(state!= 0)
+//                        playThread.setSoundIndex(value, state);
+//                }
+
+//        };
+        //        playThread.setmHandler(playHandler);
     }
 
 
@@ -212,11 +238,24 @@ public class MainActivity extends AppCompatActivity {
         pg.generation();
         testWav = new ArrayList<byte[]>();
         testWav.addAll(pg.getInHaust());
-        testArray = pg.getInArray();
+//        testArray = pg.getArray();
     }
 
     private void playTest(){
+
         mAudioPlayer.startPlayer();
-        mAudioPlayer.play(testArray,0,testArray.length);
-    }
+//        int i = 0;
+//        while(i < testWav.size()){
+//            if(!isStop){
+//                byte[] buffer = testWav.get(i);
+//                mAudioPlayer.play(buffer,0,buffer.length);
+//                i++;
+//                if(i == testWav.size()) i = 0;
+//            }
+//        }
+//        for(byte[] buffer:testWav)
+//            mAudioPlayer.play(buffer,0,buffer.length);
+//        mAudioPlayer.play(testArray,0,testArray.length);
+//        mAudioPlayer.stopPlayer();
+        }
 }
