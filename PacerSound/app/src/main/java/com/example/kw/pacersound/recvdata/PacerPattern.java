@@ -9,7 +9,6 @@ public class PacerPattern {
     // current used pacepatterused>=0, <0 turn off pacer
     public static int PACEPATTERNUSED = -1;
     // current used pacesoundused >=0, <0 turn off pacer
-    public static int PACERSOUNDUSED = -1;
 
     /**
      * Save wavedata for drawing the rectangle, list for drawing spo2 rect
@@ -50,6 +49,7 @@ public class PacerPattern {
     }
     public void AddPacers(int pacerid, List<PACER> pacers) {
         PACERS ps= new PACERS(pacerid,pacers);
+        if(this.PACEPATTERN != null) this.PACEPATTERN.clear();
         this.PACEPATTERN.add(ps);
     }
 
@@ -69,13 +69,5 @@ public class PacerPattern {
 
     public List<byte[]> getExWav() {
         return EXHAUSTWAV;
-    }
-
-    public void Patternclear(){
-        PACEPATTERNUSED = -1;
-        PACERSOUNDUSED = -1;
-        PACEPATTERN.clear();
-        INHAUSTWAV.clear();
-        EXHAUSTWAV.clear();
     }
 }

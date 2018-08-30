@@ -48,8 +48,6 @@ public class MainActivity extends AppCompatActivity {
     private List<byte[]> exWav = new ArrayList<>();
 
     private int rs = 6;
-    private boolean isPacerUpdate = true;
-    private boolean soundOn = false;
 
     public static final String[] TEST_PROGRAM_ARRAY = {
             "请选择播放速度",
@@ -84,6 +82,7 @@ public class MainActivity extends AppCompatActivity {
 //        String path = "/assets/test.wav";
         findViewById(R.id.btnOpenPacer).setOnClickListener(ctrlListener);
         findViewById(R.id.btnOpenPacerSound).setOnClickListener((ctrlListener));
+        findViewById(R.id.btnSetRS).setOnClickListener((ctrlListener));
         findViewById(R.id.textCurrentBpm).setOnClickListener((ctrlListener));
         findViewById(R.id.btnGen).setOnClickListener((ctrlListener));
         findViewById(R.id.btnTest).setOnClickListener((ctrlListener));
@@ -109,6 +108,38 @@ public class MainActivity extends AppCompatActivity {
                     btnOpenPacer.setText(getResources().getString(R.string.app_main_pacer_on));
                     btnOpenPacerSound.setText(getResources().getString(R.string.app_main_pacer_sound_on));
                     playThread.Pause();
+                }
+            } else if (v.getId() == R.id.btnOpenPacerSound) {
+                Button btnOpenPacerSound = (Button) findViewById(R.id.btnOpenPacerSound);
+                boolean toOpen = (btnOpenPacerSound.getText().equals(getResources().getString(R.string.app_main_pacer_sound_on)));
+                boolean PacerExist = OpenPacerSound(v.getContext(),toOpen);
+                if(PacerExist) {
+                    if (toOpen){
+                        btnOpenPacerSound.setText(getResources().getString(R.string.app_main_pacer_sound_off));
+                        playThread.Continue();
+                    }
+                    else{
+                        btnOpenPacerSound.setText(getResources().getString(R.string.app_main_pacer_sound_on));
+                        playThread.Pause();
+                    }
+                }
+            } else if (v.getId() == R.id.btnSetRS){
+                String InputStr=  InputReFs.getText().toString();
+                if(InputStr.equals(""))
+                    Toast.makeText(v.getContext(), "请输入", Toast.LENGTH_SHORT).show();
+                else{
+                    rs = Integer.parseInt(InputReFs.getText().toString());
+                    TextView currentRS = findViewById(R.id.textCurrentBpm);
+                    currentRS.setText(String.valueOf(rs));
+                }
+                if(pacerPattern !=null) {
+                    pacerPattern.Patternclear();
+                    drawPacerRect.drawClear();
+//                    playThread.Pause();
+                    Button btnOpenPacer = (Button) findViewById(R.id.btnOpenPacer);
+                    btnOpenPacer.setText(getResources().getString(R.string.app_main_pacer_on));
+                    Button btnOpenPacerSound = (Button) findViewById(R.id.btnOpenPacerSound);
+                    btnOpenPacerSound.setText(getResources().getString(R.string.app_main_pacer_sound_on));
                 }
             } else if (v.getId() == R.id.btnGen){
                 testPlayer();
@@ -152,52 +183,43 @@ public class MainActivity extends AppCompatActivity {
 
     /*--------------------------Dialog--------------------------------------------------------------------*/
     private void showCustomizeDialog(final Context context) {
+        /* @setView 装入自定义View ==> R.layout.dialog_customize
+         * 由于dialog_customize.xml只放置了一个EditView，因此和图8一样
+         * dialog_customize.xml可自定义更复杂的View
+         */
         AlertDialog.Builder customizeDialog =
                 new AlertDialog.Builder(context);
         final View dialogView = LayoutInflater.from(context)
                 .inflate(R.layout.icon_dialog_pacersetting,null);
         customizeDialog.setTitle("设置呼吸节拍器");
         customizeDialog.setView(dialogView);
-        /* 设置确定按键
-        * 更新RS和pacer声音的状态
-        * */
         customizeDialog.setPositiveButton("确定",
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        CheckBox sound = dialogView.findViewById(R.id.checkBox_soundOn);
+                        CheckBox soundOn = dialogView.findViewById(R.id.checkBox_soundOn);
                         EditText edit_text = (EditText) dialogView.findViewById(R.id.edit_text);
-                        int inRS = Integer.parseInt(edit_text.getText().toString());
-                        //check RS changed
-                        if(inRS == rs)
-                            isPacerUpdate = false;
-                        else{
-                            isPacerUpdate = true;
-                            //revise the text to show the current bpm
-                            rs = inRS;
-                            TextView currentRS = findViewById(R.id.textCurrentBpm);
-                            currentRS.setText(String.valueOf(rs));
-                            //clear the existed pacer pattern
-                            if(pacerPattern !=null) {
-                                drawPacerRect.drawClear();
-                                Button btnOpenPacer = (Button) findViewById(R.id.btnOpenPacer);
-                                btnOpenPacer.setText(getResources().getString(R.string.app_main_pacer_on));
-                                Button btnOpenPacerSound = (Button) findViewById(R.id.btnOpenPacerSound);
-                                btnOpenPacerSound.setText(getResources().getString(R.string.app_main_pacer_sound_on));
-                            }
-                        }
+                        rs = Integer.parseInt(edit_text.getText().toString());
+                        if(soundOn.isChecked())
+                            Toast.makeText(context, "打开声音", Toast.LENGTH_SHORT).show();
+                        else
+                            Toast.makeText(context, "关闭声音", Toast.LENGTH_SHORT).show();
 
-                        if(sound.isChecked())
-                        {
-                            soundOn = true;
-                            Toast.makeText(context, "声音已打开", Toast.LENGTH_SHORT).show();
-                        } else {
-                            soundOn = false;
-                            Toast.makeText(context, "声音已关闭", Toast.LENGTH_SHORT).show();
+                        //clear the exist pacer pattern
+                        if(pacerPattern !=null) {
+                            pacerPattern.Patternclear();
+                            drawPacerRect.drawClear();
+                            Button btnOpenPacer = (Button) findViewById(R.id.btnOpenPacer);
+                            btnOpenPacer.setText(getResources().getString(R.string.app_main_pacer_on));
+                            Button btnOpenPacerSound = (Button) findViewById(R.id.btnOpenPacerSound);
+                            btnOpenPacerSound.setText(getResources().getString(R.string.app_main_pacer_sound_on));
                         }
+                        //revise the text to show the current bpm
+                        TextView currentRS = findViewById(R.id.textCurrentBpm);
+                        currentRS.setText(String.valueOf(rs));
                     }
                 });
-        /* 设置取消按键*/
+
         customizeDialog.setNegativeButton("关闭",
                 new DialogInterface.OnClickListener() {
                     @Override
@@ -214,25 +236,21 @@ public class MainActivity extends AppCompatActivity {
     private void OpenDrawingPacer(boolean pacerOn)
     {
         if(pacerOn) {
+            //Set pacer bpm
+            int buffersize = mAudioPlayer.getBufferSize();
+            PacerGenerator pg = new PacerGenerator(this,rs,(int)buffersize);
+            pg.generation();
             if(pacerPattern==null)
                 pacerPattern= new PacerPattern();
             pacerPattern.PACEPATTERNUSED = 0;
-            //update pacer pattern if RS is updated.
-            if(isPacerUpdate){
-                int buffersize = mAudioPlayer.getBufferSize();
-                PacerGenerator pg = new PacerGenerator(this,rs,buffersize);
-                pg.generation();
-                pacerPattern.AddPacers(0, pg.getPacerlist());
-                playThread.setWav(pg.getInHaust(),pg.getExHaust());
-                isPacerUpdate = false;
+            pacerPattern.AddPacers(0, pg.getPacerlist());
+            mAudioPlayer.setWavData(pg.getInArray(), pg.getExArray());
+            if(inWav != null){
+                inWav.clear();
+                exWav.clear();
             }
-            //open the pacer sound if needed
-            if(soundOn){
-                playThread.Continue();
-            } else {
-                playThread.Pause();
-            }
-
+            inWav.addAll(pg.getInHaust());
+            exWav.addAll(pg.getExHaust());
         }else {
             if(pacerPattern!=null) pacerPattern.PACEPATTERNUSED = -1;
         }
@@ -241,6 +259,23 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /*--------------------------Pacer Sound--------------------------------------------------------------------*/
+    private boolean OpenPacerSound(Context context, boolean soundOn){
+        if(pacerPattern==null)
+        {
+            Toast.makeText(context, "先请打开节拍器", Toast.LENGTH_SHORT).show();
+            return false;
+        } else{
+            if(soundOn) {
+                pacerPattern.PACERSOUNDUSED = 0;
+                mAudioPlayer.startPlayer();
+            }else {
+                pacerPattern.PACERSOUNDUSED = -1;
+            }
+            playThread.setWav(inWav,exWav);
+            return true;
+        }
+    }
+
     private void PlayerInit(){
         if(mAudioPlayer == null)
             mAudioPlayer = new AudioPlayer();
@@ -250,9 +285,6 @@ public class MainActivity extends AppCompatActivity {
         playHandler = new Handler(){
             @Override
             public void handleMessage(Message msg) {
-                /* Check the pacer state, then send the state msg to the audioplayer:
-                 * holds, then stop the sound; Inhaust, then paly inhaust sound; exhaust, then play exhaust sound.
-                 */
                 int state = msg.getData().getInt("PacerState");
                 int value = msg.getData().getInt("PacerValue");
                 playThread.updatePlayer(state, value);
